@@ -19,7 +19,7 @@ contract DPK is ERC20 {
     }
 
     /// @param _amount the amount of tokens to be burned
-    function burn(uint256 _amount) external isOwner{
+    function burn(uint256 _amount) external {
         _burn(msg.sender, _amount);
     }
     

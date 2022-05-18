@@ -24,7 +24,6 @@ const TopOfTheDaySection: React.FC<Props> = ({coins, loading, setLoading}) => {
           setLosers(getTopLosers(coins));
           setLoading(true); 
         }
-        console.log('Entered in useEffect of TopOfTheDaySection');
     },[coins]);
 
 

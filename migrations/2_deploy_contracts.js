@@ -46,7 +46,6 @@ module.exports = async function(deployer,network, accounts) {
     const zrxContract = await ZRX.deployed();
     await deployer.deploy(Dapperbank, dpkContract.address);
     const dapperbankContract = await Dapperbank.deployed();
-    await dpkContract.setContractOwner(dapperbankContract.address, {from: accounts[0]});
 
     // add the tokens to the assets
     await dapperbankContract.addTokenToAssets(daiContract.address);

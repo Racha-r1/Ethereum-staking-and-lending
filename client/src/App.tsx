@@ -26,7 +26,6 @@ const App : React.FC = () => {
   useEffect(()=> {
     fetchCoins().then(data => {
       setCoins(data);
-      setLoading(true);
       }); 
   },[]);
 
