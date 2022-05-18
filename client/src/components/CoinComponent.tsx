@@ -4,12 +4,17 @@ import Price from "../api/Price";
 
 interface Props {
     coin: Coin;
-    setShowModal: any;
-    setCurrentCoin: any;
+    setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+    setCurrentCoin: React.Dispatch<React.SetStateAction<Coin | undefined>>;
     currencycode: string;
 }
 
 const CoinComponent: React.FC<Props> = ({ coin, setShowModal, setCurrentCoin, currencycode } : Props) => {
+
+
+  React.useEffect(() => {
+
+  }, [coin]);
   return (
     <tr
       className="text-left text-medium opacity-100 hover:bg-blue-100"

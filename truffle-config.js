@@ -1,3 +1,7 @@
+require("ts-node").register({
+  files: true,
+});
+
 const path = require("path");
 
 module.exports = {
