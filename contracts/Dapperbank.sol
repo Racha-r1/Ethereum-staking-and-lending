@@ -95,7 +95,8 @@ contract DapperBank  {
     function claimReward(address _token) public isAsset(_token) {
         Stake memory stake1 = stakedBalances[_token][msg.sender];
         require(stake1.amount > 0, "You must stake some tokens before you can claim a reward!");
-        uint reward = (block.timestamp - stake1.timestamp) / 300;
+        uint claimInterval = 60;
+        uint reward = (block.timestamp - stake1.timestamp) / 60;
         if (DpkToken.balanceOf(address(this)) < reward) {
             /// mint some tokens and send it to this contract
             mintTokens(address(this), 1000000 * 10 ** 18);

@@ -10,6 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Coin from "./api/Coin";
 import Account from "./components/Account";
 import Currencies from "./components/Currencies";
+import StakeModal from "./components/StakeModal";
 
 const App : React.FC = () => {
 
@@ -61,7 +62,7 @@ const App : React.FC = () => {
         </div>
       </div>
       <TopOfTheDaySection coins={coins} setLoading={setLoading} loading={loading}/>
-      {/* <StakeModal coin={currentCoin} showModal={showModal} setShowModal={setShowModal} account={account}/> */}
+      <StakeModal coin={currentCoin} showModal={showModal} setShowModal={setShowModal} account={account}/>
         <div className="lg:w-11/12 mx-auto px-4"> 
           <div className="w-full py-6">
               <div className="flex flex-col gap-2 rounded-md shadow-md bg-white p-6">
