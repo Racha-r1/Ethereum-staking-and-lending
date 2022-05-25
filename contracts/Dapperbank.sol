@@ -15,7 +15,7 @@ contract DapperBank  {
     event Staked(
         address indexed investor, 
         address indexed token,
-        uint amount
+        uint indexed amount
     );
 
     /// @notice token address -> investor address -> amount staked

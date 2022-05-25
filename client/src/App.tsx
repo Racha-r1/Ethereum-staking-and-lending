@@ -46,11 +46,11 @@ const App : React.FC = () => {
               </button>
               <nav className= {`transition duration-500 ease-in-out flex flex-col lg:flex-row py-5 gap-2 justify-end lg:flex ${toggle ? "flex" : "hidden"}`} id="nav_content">
                   {
-                    isConnected ? <div className="flex flex-col lg:flex-row flex-wrap gap-2 items-center">
+                    isConnected ? <div className="flex flex-col-reverse lg:flex-row flex-wrap gap-2 lg:items-center">
                                     <Currencies setCurrencyCode={setCurrencyCode}/>
                                     <Account account={account}/>
                                   </div> 
-                    :  <div className="flex flex-col lg:flex-row flex-wrap gap-2 items-center">
+                    :  <div className="flex flex-col-reverse lg:flex-row flex-wrap gap-2 lg:items-center">
                         <Currencies setCurrencyCode={setCurrencyCode}/>
                         <button className="transition duration-500 ease-in-out text-green-400 hover:bg-green-400 hover:text-white text-lg border-2 border-green-400 py-1 px-4 rounded-sm font-medium flex items-center gap-2 w-max" onClick={() => connectWallet()}><Metamask className="w-6 h-auto"/>  Metamask </button>
                       </div> 

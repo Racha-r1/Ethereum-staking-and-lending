@@ -1,7 +1,7 @@
 import Coin from "./Coin";
 
 async function getCoins(page: number){
-    const URL = `https://coinmarketcapapifinalwork.herokuapp.com/coins/${page}`;
+    const URL = `http://localhost:8080/coins/${page}`;
     const response = await fetch(URL);
     const data = await response.json();
     return data;
@@ -26,7 +26,7 @@ export async function fetchCoins(){
 }
 
 // we only are interested in the ERC-20 tokens
-function getERC20Tokens(tokens: Coin[]){
+function getERC20Tokens(tokens: Coin[]): Coin[] {
     const ERC_20_tokens = ["ETH","DAI","USDC","USDT","UNI","ZRX","AAVE","YFI","COMP","LINK","SUSHI","BAT", "CAKE","FLOW"];
     return tokens.filter(token => ERC_20_tokens.includes(token.symbol));
 }
