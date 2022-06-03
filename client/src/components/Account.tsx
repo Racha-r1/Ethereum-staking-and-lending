@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 interface Props {
     account: string | undefined
@@ -39,10 +40,26 @@ const Account: React.FC<Props> = ({ account }: Props) => {
                     <li>
                         <a
                             href="/rewards"
-                            className="block px-4 py-2 hover:bg-gray-900"
+                            className="block px-4 py-2 hover:bg-gray-900 text-sm font-normal"
                         >
                             Rewards
                         </a>
+                    </li>
+                    <li>
+                        <Link
+                            to="/history"
+                            className="block px-4 py-2 hover:bg-gray-900 text-sm font-normal"
+                        >
+                            History
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            to="/"
+                            className="block px-4 py-2 hover:bg-gray-900 text-sm font-normal"
+                        >
+                            Home
+                        </Link>
                     </li>
                 </ul>
             </div>

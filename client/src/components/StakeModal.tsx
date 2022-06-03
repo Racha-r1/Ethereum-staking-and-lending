@@ -16,6 +16,7 @@ import UNI from '../contracts/UNI.json'
 import LINK from '../contracts/LINK.json'
 import { toast } from 'react-toastify'
 import { Contract, ethers, Signer } from 'ethers'
+import USDT from '../contracts/USDT.json'
 import Box from '@mui/material/Box'
 import Tab from '@mui/material/Tab'
 import TabContext from '@mui/lab/TabContext'
@@ -68,6 +69,7 @@ const StakeModal: React.FC<Props> = ({
         FLOW: FLOW,
         UNI: UNI,
         LINK: LINK,
+        USDT: USDT,
     }
 
     const stakedNotification = (coinName: string) =>
@@ -92,7 +94,11 @@ const StakeModal: React.FC<Props> = ({
         } else {
             try {
                 if (contract instanceof Contract) {
-                    await stake(contract, String(amount), contract.signer)
+                    const receipt = await stake(
+                        contract,
+                        String(amount),
+                        contract.signer
+                    )
                     const symbol: string = await contract.symbol()
                     stakedNotification(symbol)
                     setShowModal(false)
@@ -109,7 +115,6 @@ const StakeModal: React.FC<Props> = ({
         try {
             if (contract instanceof Contract) {
                 const transaction = await unstake(contract, contract.signer)
-                await transaction.wait()
                 const symbol: string = await contract.symbol()
                 unstakedNotification(symbol)
                 setShowModal(false)
@@ -151,7 +156,39 @@ const StakeModal: React.FC<Props> = ({
                 }
             }
         }
-    }, [account, coin])
+    }, [coin])
+
+    React.useEffect(() => {
+        if (coin) {
+            if (mapping[coin.symbol] !== undefined) {
+                const contractAbi = mapping[coin.symbol].abi
+                const contractAddress =
+                    mapping[coin.symbol].networks[GANACHE_NETWORK_ID].address
+                const signer: Signer = provider.getSigner()
+                const contract: Contract = new ethers.Contract(
+                    contractAddress,
+                    contractAbi,
+                    signer
+                )
+                setContract(contract)
+                if (account) {
+                    getAmountOfTokensStaked(contract, signer).then(staked => {
+                        const stakedBalance = parseInt(
+                            ethers.utils.formatEther(staked.amount.toString())
+                        )
+                        setStakedBalance(stakedBalance)
+                    })
+
+                    contract.balanceOf(account).then((balance: number) => {
+                        balance = parseInt(
+                            ethers.utils.formatEther(balance.toString())
+                        )
+                        setBalance(balance)
+                    })
+                }
+            }
+        }
+    }, [])
 
     return (
         <div
@@ -182,6 +219,8 @@ const StakeModal: React.FC<Props> = ({
                                             onClick={() => {
                                                 setShowModal(false)
                                                 setAmount(0)
+                                                setStakedBalance(0)
+                                                setBalance(0)
                                             }}
                                             type="button"
                                             className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"

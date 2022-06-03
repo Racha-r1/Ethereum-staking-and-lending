@@ -15,7 +15,6 @@ const CoinComponent: React.FC<Props> = ({
     setCurrentCoin,
     currencycode,
 }: Props) => {
-    React.useEffect(() => {}, [coin])
     return (
         <tr
             className="text-left text-medium opacity-100 hover:bg-blue-100"
