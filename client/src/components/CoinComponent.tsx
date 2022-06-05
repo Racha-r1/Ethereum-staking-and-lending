@@ -1,26 +1,23 @@
-import React from 'react'
-import Coin from '../api/Coin'
-import Price from '../api/Price'
+import React from "react";
+import Coin from "../api/Coin";
+import Price from "../api/Price";
+import { RootState, AppDispatch } from "../redux/store";
+import { useSelector, useDispatch } from "react-redux";
+import { setCurrentCoin, setShowModal } from "../redux/features/coinsSlice";
 
 interface Props {
-    coin: Coin
-    setShowModal: React.Dispatch<React.SetStateAction<boolean>>
-    setCurrentCoin: React.Dispatch<React.SetStateAction<Coin | undefined>>
-    currencycode: string
+    coin: Coin;
 }
 
-const CoinComponent: React.FC<Props> = ({
-    coin,
-    setShowModal,
-    setCurrentCoin,
-    currencycode,
-}: Props) => {
+const CoinComponent: React.FC<Props> = ({ coin }: Props) => {
+    const dispatch = useDispatch<AppDispatch>();
+    const { currencyCode } = useSelector((state: RootState) => state.coins);
     return (
         <tr
             className="text-left text-medium opacity-100 hover:bg-blue-100"
             onClick={() => {
-                setShowModal(true)
-                setCurrentCoin(coin)
+                dispatch(setShowModal(true));
+                dispatch(setCurrentCoin(coin));
             }}
         >
             <td className="lg:p-3 md:p-1">
@@ -35,14 +32,14 @@ const CoinComponent: React.FC<Props> = ({
                 </div>
             </td>
             <td className="lg:p-3 md:p-1">
-                {coin.price[currencycode as keyof Price]}
+                {coin.price[currencyCode as keyof Price]}
             </td>
             <td className="lg:p-3 md:p-1">
-                {coin.marketcap[currencycode as keyof Price]}
+                {coin.marketcap[currencyCode as keyof Price]}
             </td>
             <td className="lg:p-3 md:p-1">{coin.supply}</td>
         </tr>
-    )
-}
+    );
+};
 
-export default CoinComponent
+export default CoinComponent;

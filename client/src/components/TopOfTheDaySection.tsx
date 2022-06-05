@@ -5,7 +5,7 @@ import Gainer from "./Gainer";
 import { getTopGainers, getTopLosers } from "../util";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../redux/store";
-import { setGainers, setLosers } from "../redux/reducers/CoinsReducer";
+import { setGainers, setLosers } from "../redux/features/coinsSlice";
 
 const TopOfTheDaySection: React.FC = () => {
     const { coins, loading, gainers, losers } = useSelector(

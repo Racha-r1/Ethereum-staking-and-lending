@@ -1,4 +1,4 @@
-import { Contract, ethers, providers, Signer, EventFilter } from "ethers";
+import { Contract, ethers, Signer, EventFilter } from "ethers";
 import DapperBank from "../contracts/DapperBank.json";
 import Stake from './Stake';
 

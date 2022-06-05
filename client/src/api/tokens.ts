@@ -1,7 +1,7 @@
 import Coin from "./Coin";
 
 async function getCoins(page: number){
-    const URL = `http://localhost:8080/coins/${page}`;
+    const URL = `https://coinmarketcapapifinalwork.herokuapp.com/coins/${page}`;
     const response = await fetch(URL);
     console.log(response);
     const data = await response.json();
@@ -35,7 +35,7 @@ function getERC20Tokens(tokens: Coin[]): Coin[] {
 export async function getTokens(page: number){
    // check if cache is empty and cachetimer has not passed yet (cachetimer of 10 minutes)
     if(localStorage.getItem("coins") === null){
-        const data = await getCoins(1);
+        const data = await getCoins(page);
         const filtered = getERC20Tokens(data);
         localStorage.setItem("coins", JSON.stringify({
             "coins": filtered,
@@ -43,7 +43,7 @@ export async function getTokens(page: number){
         }));
     }
     else if (JSON.parse(localStorage.getItem("coins") as string).cachetimer < new Date().getTime()){
-        const data = await getCoins(1);
+        const data = await getCoins(page);
         const filtered = getERC20Tokens(data);
         localStorage.setItem("coins", JSON.stringify({"coins": filtered, "cachetimer": new Date().getTime() + 600000}));
     }

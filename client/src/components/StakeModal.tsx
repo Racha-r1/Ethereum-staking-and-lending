@@ -1,63 +1,58 @@
-import React from 'react'
-import Coin from '../api/Coin'
+import React from "react";
 import {
     stake,
     getAmountOfTokensStaked,
     unstake,
-} from '../api/contract-methods'
-import DAI from '../contracts/DAI.json'
-import USDC from '../contracts/USDC.json'
-import CAKE from '../contracts/CAKE.json'
-import COMP from '../contracts/COMP.json'
-import AAVE from '../contracts/AAVE.json'
-import BAT from '../contracts/BAT.json'
-import FLOW from '../contracts/FLOW.json'
-import UNI from '../contracts/UNI.json'
-import LINK from '../contracts/LINK.json'
-import { toast } from 'react-toastify'
-import { Contract, ethers, Signer } from 'ethers'
-import USDT from '../contracts/USDT.json'
-import Box from '@mui/material/Box'
-import Tab from '@mui/material/Tab'
-import TabContext from '@mui/lab/TabContext'
-import TabList from '@mui/lab/TabList'
-import TabPanel from '@mui/lab/TabPanel'
-import Button from '@mui/material/Button'
+} from "../api/contract-methods";
+import DAI from "../contracts/DAI.json";
+import USDC from "../contracts/USDC.json";
+import CAKE from "../contracts/CAKE.json";
+import COMP from "../contracts/COMP.json";
+import AAVE from "../contracts/AAVE.json";
+import BAT from "../contracts/BAT.json";
+import FLOW from "../contracts/FLOW.json";
+import UNI from "../contracts/UNI.json";
+import LINK from "../contracts/LINK.json";
+import { toast } from "react-toastify";
+import { Contract, ethers, Signer } from "ethers";
+import USDT from "../contracts/USDT.json";
+import Box from "@mui/material/Box";
+import Tab from "@mui/material/Tab";
+import TabContext from "@mui/lab/TabContext";
+import TabList from "@mui/lab/TabList";
+import TabPanel from "@mui/lab/TabPanel";
+import Button from "@mui/material/Button";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "../redux/store";
+import { setShowModal } from "../redux/features/coinsSlice";
 
-interface Props {
-    coin: Coin | undefined
-    showModal: boolean
-    setShowModal: React.Dispatch<React.SetStateAction<boolean>>
-    account: string | undefined
-}
+const StakeModal: React.FC = () => {
+    const { currentCoin, showModal } = useSelector(
+        (state: RootState) => state.coins
+    );
+    const { account } = useSelector((state: RootState) => state.account);
+    const dispatch = useDispatch<AppDispatch>();
+    const [amount, setAmount] = React.useState<number>(0);
+    const GANACHE_NETWORK_ID: string = "5777";
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
 
-const StakeModal: React.FC<Props> = ({
-    coin,
-    showModal,
-    setShowModal,
-    account,
-}) => {
-    const [amount, setAmount] = React.useState<number>(0)
-    const GANACHE_NETWORK_ID: string = '5777'
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-
-    const [balance, setBalance] = React.useState<number>(0)
+    const [balance, setBalance] = React.useState<number>(0);
     const [contract, setContract] = React.useState<undefined | Contract>(
         undefined
-    )
-    const [stakedBalance, setStakedBalance] = React.useState<number>(0)
+    );
+    const [stakedBalance, setStakedBalance] = React.useState<number>(0);
 
-    const [value, setValue] = React.useState<string>('1')
+    const [value, setValue] = React.useState<string>("1");
 
     const handleChange = (event: React.SyntheticEvent, newValue: string) => {
-        setValue(newValue)
-    }
+        setValue(newValue);
+    };
 
-    const changeNum = e => {
+    const changeNum = (e) => {
         if (!isNaN(e.target.value)) {
-            setAmount(parseInt(e.target.value))
+            setAmount(parseInt(e.target.value));
         }
-    }
+    };
 
     const mapping = {
         DAI: DAI,
@@ -70,142 +65,140 @@ const StakeModal: React.FC<Props> = ({
         UNI: UNI,
         LINK: LINK,
         USDT: USDT,
-    }
+    };
 
     const stakedNotification = (coinName: string) =>
         toast.success(`Succesfully staked ${coinName} to the platform!`, {
-            theme: 'dark',
-        })
+            theme: "dark",
+        });
 
     const unstakedNotification = (coinName: string) =>
         toast.success(`Succesfully unstaked ${coinName}!`, {
-            theme: 'dark',
-        })
+            theme: "dark",
+        });
 
     const errorNotification = (error: Error) =>
         toast.error(`${error.message}`, {
-            theme: 'dark',
-        })
+            theme: "dark",
+        });
 
     const handleStake = async () => {
         if (amount === 0) {
-            alert('Please enter an amount to stake')
-            return
+            alert("Please enter an amount to stake");
+            return;
         } else {
             try {
                 if (contract instanceof Contract) {
-                    const receipt = await stake(
-                        contract,
-                        String(amount),
-                        contract.signer
-                    )
-                    const symbol: string = await contract.symbol()
-                    stakedNotification(symbol)
-                    setShowModal(false)
+                    await stake(contract, String(amount), contract.signer);
+                    const symbol: string = await contract.symbol();
+                    stakedNotification(symbol);
+                    dispatch(setShowModal(false));
                 }
             } catch (error) {
                 if (error instanceof Error) {
-                    errorNotification(error)
+                    errorNotification(error);
                 }
             }
         }
-    }
+    };
 
     const handleUnstake = async () => {
         try {
             if (contract instanceof Contract) {
-                const transaction = await unstake(contract, contract.signer)
-                const symbol: string = await contract.symbol()
-                unstakedNotification(symbol)
-                setShowModal(false)
+                await unstake(contract, contract.signer);
+                const symbol: string = await contract.symbol();
+                unstakedNotification(symbol);
+                dispatch(setShowModal(false));
             }
         } catch (error) {
             if (error instanceof Error) {
-                console.log(error.message)
+                console.log(error.message);
             }
         }
-    }
+    };
 
     React.useEffect(() => {
-        if (coin) {
-            if (mapping[coin.symbol] !== undefined) {
-                const contractAbi = mapping[coin.symbol].abi
+        if (currentCoin) {
+            if (mapping[currentCoin.symbol] !== undefined) {
+                const contractAbi = mapping[currentCoin.symbol].abi;
                 const contractAddress =
-                    mapping[coin.symbol].networks[GANACHE_NETWORK_ID].address
-                const signer: Signer = provider.getSigner()
+                    mapping[currentCoin.symbol].networks[GANACHE_NETWORK_ID]
+                        .address;
+                const signer: Signer = provider.getSigner();
                 const contract: Contract = new ethers.Contract(
                     contractAddress,
                     contractAbi,
                     signer
-                )
-                setContract(contract)
+                );
+                setContract(contract);
                 if (account) {
-                    getAmountOfTokensStaked(contract, signer).then(staked => {
+                    getAmountOfTokensStaked(contract, signer).then((staked) => {
                         const stakedBalance = parseInt(
                             ethers.utils.formatEther(staked.amount.toString())
-                        )
-                        setStakedBalance(stakedBalance)
-                    })
+                        );
+                        setStakedBalance(stakedBalance);
+                    });
 
                     contract.balanceOf(account).then((balance: number) => {
                         balance = parseInt(
                             ethers.utils.formatEther(balance.toString())
-                        )
-                        setBalance(balance)
-                    })
+                        );
+                        setBalance(balance);
+                    });
                 }
             }
         }
-    }, [coin])
+    }, [currentCoin]);
 
     React.useEffect(() => {
-        if (coin) {
-            if (mapping[coin.symbol] !== undefined) {
-                const contractAbi = mapping[coin.symbol].abi
+        if (currentCoin) {
+            if (mapping[currentCoin.symbol] !== undefined) {
+                const contractAbi = mapping[currentCoin.symbol].abi;
                 const contractAddress =
-                    mapping[coin.symbol].networks[GANACHE_NETWORK_ID].address
-                const signer: Signer = provider.getSigner()
+                    mapping[currentCoin.symbol].networks[GANACHE_NETWORK_ID]
+                        .address;
+                const signer: Signer = provider.getSigner();
                 const contract: Contract = new ethers.Contract(
                     contractAddress,
                     contractAbi,
                     signer
-                )
-                setContract(contract)
+                );
+                setContract(contract);
                 if (account) {
-                    getAmountOfTokensStaked(contract, signer).then(staked => {
+                    getAmountOfTokensStaked(contract, signer).then((staked) => {
                         const stakedBalance = parseInt(
                             ethers.utils.formatEther(staked.amount.toString())
-                        )
-                        setStakedBalance(stakedBalance)
-                    })
+                        );
+                        setStakedBalance(stakedBalance);
+                    });
 
                     contract.balanceOf(account).then((balance: number) => {
                         balance = parseInt(
                             ethers.utils.formatEther(balance.toString())
-                        )
-                        setBalance(balance)
-                    })
+                        );
+                        setBalance(balance);
+                    });
                 }
             }
         }
-    }, [])
+    }, []);
 
     return (
         <div
             id="modal"
             className={`${
-                showModal ? 'flex' : 'hidden'
+                showModal ? "flex" : "hidden"
             } bg-gray-700 bg-opacity-50 toverflow-y-auto overflow-x-hidden fixed right-0 left-0 top-0 z-50 justify-center items-center inset-0 h-modal"`}
         >
             <div className="relative px-4 w-auto">
                 <div className="relative bg-white rounded-lg shadow">
                     <div className="flex justify-between items-center p-5 rounded-t">
-                        <Box sx={{ width: '100%', typography: 'body1' }}>
+                        <Box sx={{ width: "100%", typography: "body1" }}>
                             <TabContext value={value}>
                                 <Box
                                     sx={{
                                         borderBottom: 1,
-                                        borderColor: 'divider',
+                                        borderColor: "divider",
                                         p: 0,
                                     }}
                                 >
@@ -217,10 +210,10 @@ const StakeModal: React.FC<Props> = ({
                                         <Tab label="Lend" value="2" />
                                         <button
                                             onClick={() => {
-                                                setShowModal(false)
-                                                setAmount(0)
-                                                setStakedBalance(0)
-                                                setBalance(0)
+                                                dispatch(setShowModal(false));
+                                                setAmount(0);
+                                                setStakedBalance(0);
+                                                setBalance(0);
                                             }}
                                             type="button"
                                             className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
@@ -246,28 +239,35 @@ const StakeModal: React.FC<Props> = ({
                                         <div className="space-y-2">
                                             <div className="flex justify-between flex-wrap">
                                                 <p className="opacity-60 text-sm">
-                                                    {' '}
+                                                    {" "}
                                                     {balance > 0
-                                                        ? 'Balance: ' + balance
-                                                        : ''}
+                                                        ? "Balance: " + balance
+                                                        : ""}
                                                 </p>
                                                 <p className="opacity-60 text-sm">
-                                                    {' '}
+                                                    {" "}
                                                     {stakedBalance > 0
-                                                        ? 'Amount staked: ' +
+                                                        ? "Amount staked: " +
                                                           stakedBalance
-                                                        : ''}
+                                                        : ""}
                                                 </p>
                                             </div>
-                                            {coin && (
+                                            {currentCoin && (
                                                 <div className="flex items-center gap-4 pb-4">
                                                     <div className="flex items-center">
                                                         <img
-                                                            src={coin.img}
+                                                            src={
+                                                                currentCoin.img
+                                                            }
                                                             alt="foto"
                                                             className="lg:w-10 lg:h-10 w-5 h-5 mr-2"
                                                         />
-                                                        <p> {coin.symbol} </p>
+                                                        <p>
+                                                            {" "}
+                                                            {
+                                                                currentCoin.symbol
+                                                            }{" "}
+                                                        </p>
                                                     </div>
                                                     <input
                                                         type="text"
@@ -276,7 +276,7 @@ const StakeModal: React.FC<Props> = ({
                                                         value={
                                                             amount > 0
                                                                 ? amount
-                                                                : ''
+                                                                : ""
                                                         }
                                                         onChange={changeNum}
                                                         min={0}
@@ -311,28 +311,35 @@ const StakeModal: React.FC<Props> = ({
                                         <div className="space-y-2">
                                             <div className="flex justify-between flex-wrap">
                                                 <p className="opacity-60 text-sm">
-                                                    {' '}
+                                                    {" "}
                                                     {balance > 0
-                                                        ? 'Balance: ' + balance
-                                                        : ''}
+                                                        ? "Balance: " + balance
+                                                        : ""}
                                                 </p>
                                                 <p className="opacity-60 text-sm">
-                                                    {' '}
+                                                    {" "}
                                                     {stakedBalance > 0
-                                                        ? 'Amount staked: ' +
+                                                        ? "Amount staked: " +
                                                           stakedBalance
-                                                        : ''}
+                                                        : ""}
                                                 </p>
                                             </div>
-                                            {coin && (
+                                            {currentCoin && (
                                                 <div className="flex items-center gap-4 pb-4">
                                                     <div className="flex items-center">
                                                         <img
-                                                            src={coin.img}
+                                                            src={
+                                                                currentCoin.img
+                                                            }
                                                             alt="foto"
                                                             className="lg:w-10 lg:h-10 w-5 h-5 mr-2"
                                                         />
-                                                        <p> {coin.symbol} </p>
+                                                        <p>
+                                                            {" "}
+                                                            {
+                                                                currentCoin.symbol
+                                                            }{" "}
+                                                        </p>
                                                     </div>
                                                     <input
                                                         type="text"
@@ -341,7 +348,7 @@ const StakeModal: React.FC<Props> = ({
                                                         value={
                                                             amount > 0
                                                                 ? amount
-                                                                : ''
+                                                                : ""
                                                         }
                                                         onChange={changeNum}
                                                         min={0}
@@ -377,7 +384,7 @@ const StakeModal: React.FC<Props> = ({
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default StakeModal
+export default StakeModal;

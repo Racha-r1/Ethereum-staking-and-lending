@@ -1,13 +1,12 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React from "react";
+import { Link } from "react-router-dom";
+import { RootState } from "../redux/store";
+import { useSelector } from "react-redux";
 
-interface Props {
-    account: string | undefined
-}
-
-const Account: React.FC<Props> = ({ account }: Props) => {
-    const [toggle, setToggle] = React.useState(false)
-    const handleToggle = () => setToggle(!toggle)
+const Account: React.FC = () => {
+    const { account } = useSelector((state: RootState) => state.account);
+    const [toggle, setToggle] = React.useState(false);
+    const handleToggle = () => setToggle(!toggle);
     return (
         <div className="flex flex-col relative">
             <button
@@ -15,7 +14,7 @@ const Account: React.FC<Props> = ({ account }: Props) => {
                 className="text-green-400 bg-transparent border-2 border-green-400 font-medium text-sm px-4 py-2 text-center flex items-center flex-grow font-bold"
                 type="button"
             >
-                {account?.slice(0, 4) + '...' + account?.slice(-4)}{' '}
+                {account?.slice(0, 4) + "..." + account?.slice(-4)}{" "}
                 <svg
                     className="w-4 h-4 ml-2"
                     fill="none"
@@ -33,7 +32,7 @@ const Account: React.FC<Props> = ({ account }: Props) => {
             </button>
             <div
                 className={`z-10 font-bold bg-transparent border-2 border-green-400 w-full absolute top-full ${
-                    toggle ? 'block' : 'hidden'
+                    toggle ? "block" : "hidden"
                 }`}
             >
                 <ul className="text-green-400">
@@ -53,18 +52,10 @@ const Account: React.FC<Props> = ({ account }: Props) => {
                             History
                         </Link>
                     </li>
-                    <li>
-                        <Link
-                            to="/"
-                            className="block px-4 py-2 hover:bg-gray-900 text-sm font-normal"
-                        >
-                            Home
-                        </Link>
-                    </li>
                 </ul>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Account
+export default Account;

@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
-import CoinsReducer from './reducers/CoinsReducer'
-import AccountReducer from './reducers/AccountReducer'
+import CoinsReducer from './features/coinsSlice'
+import AccountReducer from './features/accountSlice'
 
 export const store = configureStore({
   reducer: {

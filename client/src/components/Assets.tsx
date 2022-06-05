@@ -1,20 +1,9 @@
 import React from "react";
-import Coin from "../api/Coin";
 import { RootState } from "../redux/store";
 import CoinComponent from "./CoinComponent";
 import { useSelector } from "react-redux";
 
-interface Props {
-    setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
-    setCurrentCoin: React.Dispatch<React.SetStateAction<Coin | undefined>>;
-    currencycode: string;
-}
-
-const Assets: React.FC<Props> = ({
-    setShowModal,
-    setCurrentCoin,
-    currencycode,
-}: Props) => {
+const Assets: React.FC = () => {
     const { coins } = useSelector((state: RootState) => state.coins);
     return (
         <>
@@ -30,13 +19,7 @@ const Assets: React.FC<Props> = ({
                 </thead>
                 <tbody>
                     {coins.map((coin) => (
-                        <CoinComponent
-                            currencycode={currencycode}
-                            key={coin.id}
-                            coin={coin}
-                            setShowModal={setShowModal}
-                            setCurrentCoin={setCurrentCoin}
-                        />
+                        <CoinComponent key={coin.id} coin={coin} />
                     ))}
                 </tbody>
             </table>
