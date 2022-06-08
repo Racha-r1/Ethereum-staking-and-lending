@@ -85,22 +85,32 @@ const History: React.FC = () => {
 
             <div className="lg:w-11/12 mx-auto px-4 flex flex-wrap gap-5 relative bottom-10">
                 <div className="round-md shadow-md bg-white p-8 w-full flex flex-col">
-                    <table>
-                        <thead>
-                            <tr className="text-left text-sm opacity-70">
-                                <th className="lg:p-3 md:p-1">Investor</th>
-                                <th className="lg:p-3 md:p-1">Token</th>
-                                <th className="lg:p-3 md:p-1">Amount</th>
-                                <th className="lg:p-3 md:p-1">Timestamp</th>
-                                <th className="lg:p-3 md:p-1">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {transactions.map((transaction) => (
-                                <Transaction event={transaction} />
-                            ))}
-                        </tbody>
-                    </table>
+                    {transactions.length > 0 ? (
+                        <table>
+                            <thead>
+                                <tr className="text-left text-sm opacity-70">
+                                    <th className="lg:p-3 p-2">Investor</th>
+                                    <th className="lg:p-3 p-2 hidden sm:table-cell">
+                                        Token
+                                    </th>
+                                    <th className="lg:p-3 p-2">Amount</th>
+                                    <th className="lg:p-3 p-2 hidden md:table-cell">
+                                        Timestamp
+                                    </th>
+                                    <th className="lg:p-3 p-2">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {transactions.map((transaction) => (
+                                    <Transaction event={transaction} />
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <h1 className="text-center text-lg">
+                            You haven't made any transactions{" "}
+                        </h1>
+                    )}
                 </div>
             </div>
         </div>

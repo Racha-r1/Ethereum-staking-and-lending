@@ -22,7 +22,7 @@ const TopOfTheDaySection: React.FC = () => {
 
     return (
         <div className="lg:w-11/12 mx-auto px-4 flex flex-wrap gap-5 relative bottom-10">
-            <div className="round-md shadow-md bg-white p-8 md:w-5/12 w-full flex flex-col">
+            <div className="round-md shadow-md bg-white p-8 md:w-5/12 w-full flex flex-col relative">
                 {loading ? (
                     <Loader />
                 ) : (
@@ -31,13 +31,17 @@ const TopOfTheDaySection: React.FC = () => {
                             {" "}
                             Top gainers of the day{" "}
                         </h1>
-                        {gainers.map((coin) => (
-                            <Gainer key={"G" + coin.id} coin={coin} />
-                        ))}
+                        {gainers.length > 0 ? (
+                            gainers.map((coin) => (
+                                <Gainer key={"G" + coin.id} coin={coin} />
+                            ))
+                        ) : (
+                            <h1 className="text-xl absolute top-2/4 translate-y-2/4 text-center left-0 right-0"> No gainers today </h1>
+                        )}
                     </>
                 )}
             </div>
-            <div className="round-md shadow-md bg-white p-8 md:w-5/12 w-full flex flex-col">
+            <div className="round-md shadow-md bg-white p-8 md:w-5/12 w-full flex flex-col relative">
                 {loading ? (
                     <Loader />
                 ) : (
@@ -46,9 +50,15 @@ const TopOfTheDaySection: React.FC = () => {
                             {" "}
                             Top Losers of the day{" "}
                         </h1>
-                        {losers.map((coin) => (
-                            <Loser key={"L" + coin.id} coin={coin} />
-                        ))}
+                        {losers.length > 0 ? (
+                            losers.map((coin) => (
+                                <Loser key={"L" + coin.id} coin={coin} />
+                            ))
+                        ) : (
+                            <h1 className="text-xl absolute top-2/4 translate-y-2/4 text-center left-0 right-0">
+                                No Losers today
+                            </h1>
+                        )}
                     </>
                 )}
             </div>

@@ -3,7 +3,6 @@ import Coin from "./Coin";
 async function getCoins(page: number){
     const URL = `https://coinmarketcapapifinalwork.herokuapp.com/coins/${page}`;
     const response = await fetch(URL);
-    console.log(response);
     const data = await response.json();
     return data;
 } 

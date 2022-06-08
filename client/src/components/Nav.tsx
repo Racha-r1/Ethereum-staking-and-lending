@@ -15,19 +15,24 @@ const Nav: React.FC = () => {
     const { isConnected } = useSelector((state: RootState) => state.account);
     return (
         <div className="lg:w-11/12 mx-auto p-4">
-            <button className="lg:hidden" onClick={() => setToggle(!toggle)}>
-                <FaBars className="text-white text-2xl" />
-            </button>
+            <div className="flex justify-between items-start lg:hidden">
+                <button onClick={() => setToggle(!toggle)}>
+                    <FaBars className="text-white text-2xl" />
+                </button>
+                <Link className="" to="/">
+                    <img src={logo} className="w-8" alt="logo" />
+                </Link>
+            </div>
             <nav
-                className={`transition duration-500 ease-in-out flex flex-col lg:flex-row py-5 gap-2 justify-end lg:flex ${
+                className={`transition duration-500 ease-in-out flex flex-col lg:flex-row py-5 gap-2 justify-between lg:flex ${
                     toggle ? "flex" : "hidden"
                 }`}
                 id="nav_content"
             >
                 {isConnected ? (
                     <>
-                        <Link className="absolute left-9 top-2" to="/">
-                            <img src={logo} className="w-16" alt="logo" />
+                        <Link className="hidden lg:inline" to="/">
+                            <img src={logo} className="w-8" alt="logo" />
                         </Link>
                         <div className="flex flex-col-reverse lg:flex-row flex-wrap gap-2 lg:items-center">
                             <Currencies />
@@ -36,8 +41,8 @@ const Nav: React.FC = () => {
                     </>
                 ) : (
                     <>
-                        <Link className="absolute left-9 top-2" to="/">
-                            <img src={logo} className="w-24" alt="logo" />
+                        <Link className="hidden lg:inline" to="/">
+                            <img src={logo} className="w-8" alt="logo" />
                         </Link>
                         <div className="flex flex-col-reverse lg:flex-row flex-wrap gap-2 lg:items-center">
                             <Currencies />

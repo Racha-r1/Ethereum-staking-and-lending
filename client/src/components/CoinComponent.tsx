@@ -20,7 +20,7 @@ const CoinComponent: React.FC<Props> = ({ coin }: Props) => {
                 dispatch(setCurrentCoin(coin));
             }}
         >
-            <td className="lg:p-3 md:p-1">
+            <td className="lg:p-3 p-2">
                 <div className="flex items-center">
                     <img
                         src={coin.img}
@@ -31,13 +31,13 @@ const CoinComponent: React.FC<Props> = ({ coin }: Props) => {
                     <p> {coin.symbol} </p>
                 </div>
             </td>
-            <td className="lg:p-3 md:p-1">
+            <td className="lg:p-3 p-2">
                 {coin.price[currencyCode as keyof Price]}
             </td>
-            <td className="lg:p-3 md:p-1">
+            <td className="lg:p-3 p-2 hidden sm:table-cell">
                 {coin.marketcap[currencyCode as keyof Price]}
             </td>
-            <td className="lg:p-3 md:p-1">{coin.supply}</td>
+            <td className="lg:p-3 p-2 hidden sm:table-cell">{coin.supply}</td>
         </tr>
     );
 };

@@ -33,7 +33,7 @@ const StakeModal: React.FC = () => {
     const { account } = useSelector((state: RootState) => state.account);
     const dispatch = useDispatch<AppDispatch>();
     const [amount, setAmount] = React.useState<number>(0);
-    const GANACHE_NETWORK_ID: string = "5777";
+    const GANACHE_NETWORK_ID: string = "1";
     const provider = new ethers.providers.Web3Provider(window.ethereum);
 
     const [balance, setBalance] = React.useState<number>(0);
@@ -308,22 +308,7 @@ const StakeModal: React.FC = () => {
                                 </TabPanel>
                                 <TabPanel value="2" sx={{ p: 0 }}>
                                     <div className="flex flex-col gap-4 pl-2 pt-2">
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between flex-wrap">
-                                                <p className="opacity-60 text-sm">
-                                                    {" "}
-                                                    {balance > 0
-                                                        ? "Balance: " + balance
-                                                        : ""}
-                                                </p>
-                                                <p className="opacity-60 text-sm">
-                                                    {" "}
-                                                    {stakedBalance > 0
-                                                        ? "Amount staked: " +
-                                                          stakedBalance
-                                                        : ""}
-                                                </p>
-                                            </div>
+                                        <div className="flex pt-2">
                                             {currentCoin && (
                                                 <div className="flex items-center gap-4 pb-4">
                                                     <div className="flex items-center">
@@ -355,26 +340,16 @@ const StakeModal: React.FC = () => {
                                                     />
                                                 </div>
                                             )}
-                                        </div>
-                                        <div className="flex items-center rounded-b border-gray-200 dark:border-gray-600">
-                                            <Button
+                                            </div>
+                                        <div className="flex flex-col rounded-b border-gray-200 dark:border-gray-600 gap-2">
+                                            <p className="font-bold"> Borrow rate: 5% </p>
+                                            <p className="font-bold text-red-400"> Note: You will have to provide an equal amount as the lend amount as colletoral</p>
+                                            <Button className="w-32"
                                                 variant="outlined"
-                                                onClick={async () =>
-                                                    await handleStake()
-                                                }
+                                               
                                             >
-                                                Stake tokens
+                                                Lend
                                             </Button>
-                                            {stakedBalance > 0 && (
-                                                <Button
-                                                    variant="outlined"
-                                                    onClick={async () =>
-                                                        await handleUnstake()
-                                                    }
-                                                >
-                                                    Unstake tokens
-                                                </Button>
-                                            )}
                                         </div>
                                     </div>
                                 </TabPanel>

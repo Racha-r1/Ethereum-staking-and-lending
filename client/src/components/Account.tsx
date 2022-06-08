@@ -8,7 +8,7 @@ const Account: React.FC = () => {
     const [toggle, setToggle] = React.useState(false);
     const handleToggle = () => setToggle(!toggle);
     return (
-        <div className="flex flex-col relative">
+        <div className="flex flex-col relative w-max">
             <button
                 onClick={handleToggle}
                 className="text-green-400 bg-transparent border-2 border-green-400 font-medium text-sm px-4 py-2 text-center flex items-center flex-grow font-bold"
@@ -31,18 +31,18 @@ const Account: React.FC = () => {
                 </svg>
             </button>
             <div
-                className={`z-10 font-bold bg-transparent border-2 border-green-400 w-full absolute top-full ${
+                className={`z-20 font-bold bg-black border-2 border-green-400 w-full absolute top-full ${
                     toggle ? "block" : "hidden"
                 }`}
             >
                 <ul className="text-green-400">
                     <li>
-                        <a
-                            href="/rewards"
+                        <Link
+                            to="/rewards"
                             className="block px-4 py-2 hover:bg-gray-900 text-sm font-normal"
                         >
                             Rewards
-                        </a>
+                        </Link>
                     </li>
                     <li>
                         <Link
