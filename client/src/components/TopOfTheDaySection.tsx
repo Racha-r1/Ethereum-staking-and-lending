@@ -22,7 +22,7 @@ const TopOfTheDaySection: React.FC = () => {
 
     return (
         <div className="lg:w-11/12 mx-auto px-4 flex flex-wrap gap-5 relative bottom-10">
-            <div className="round-md shadow-md bg-white p-8 md:w-5/12 w-full flex flex-col relative">
+            <div className="round-md shadow-md bg-white p-8 flex-grow flex flex-col relative">
                 {loading ? (
                     <Loader />
                 ) : (
@@ -41,7 +41,7 @@ const TopOfTheDaySection: React.FC = () => {
                     </>
                 )}
             </div>
-            <div className="round-md shadow-md bg-white p-8 md:w-5/12 w-full flex flex-col relative">
+            <div className="round-md shadow-md bg-white p-8 flex-grow flex flex-col relative">
                 {loading ? (
                     <Loader />
                 ) : (

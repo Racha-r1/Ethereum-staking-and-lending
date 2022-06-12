@@ -1,6 +1,7 @@
 import { Contract, ethers, Signer, EventFilter } from "ethers";
 import DapperBank from "../contracts/DapperBank.json";
 import Stake from './Stake';
+import Event from './Event';
 
 const networkId: string = '5777';
 
@@ -24,7 +25,7 @@ const unstake = async(tokenContract: Contract , signer: Signer) => {
     return await dapperbankContract.unstake(tokenContract.address);
 }
 
-const claimReward = async(tokenContract: Contract, signer: Signer) => {
+const issueRewards = async(tokenContract: Contract, signer: Signer) => {
     const dapperbankContract: Contract = new ethers.Contract(DapperBank.networks[networkId].address, DapperBank.abi, signer);
     return await dapperbankContract.claimReward(tokenContract.address);
 }
@@ -38,10 +39,73 @@ const getTransactionHistory = async(signer: Signer) => {
     return [...stakedEvents, ...unstakedEvents];
 }
 
+const getTokenBalance = async(tokenAddress: string, signer: Signer) => {
+    const dapperbankContract: Contract = new ethers.Contract(DapperBank.networks[networkId].address, DapperBank.abi, signer);
+    return await dapperbankContract.tokenBalances(tokenAddress);
+}
+
+async function getHistory(account: string) {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer: Signer = provider.getSigner();
+    const results = await getTransactionHistory(signer);
+    const signatureStakedEvent = "Staked(address,string,uint,uint256)";
+    const signatureUnstakedEvent =
+        "Unstaked(address,string,uint,uint256)";
+    const transactions: Event[] = [];
+    results.forEach(async (result) => {
+        if (result.args) {
+            const amount = parseInt(
+                ethers.utils.formatEther(
+                    result.args["amount"].toString()
+                )
+            );
+            const d = new Date(
+                parseInt(result.args["timestamp"]) * 1000
+            );
+            if (result.event === "Staked") {
+                const stakedBytes: Uint8Array =
+                    ethers.utils.toUtf8Bytes(signatureStakedEvent);
+                ethers.utils.keccak256(stakedBytes);
+                const token = ethers.utils.defaultAbiCoder
+                    .decode(["string"], result.data)[0]
+                    .toString();
+                if (result.args["investor"].toString().toLowerCase() === account){
+                    transactions.push({
+                        amount: amount,
+                        investor: result.args["investor"],
+                        token: token,
+                        type: result.event,
+                        date: d,
+                    });
+                }
+            }
+            if (result.event === "Unstaked") {
+                const unstakedBytes: Uint8Array =
+                    ethers.utils.toUtf8Bytes(signatureUnstakedEvent);
+                ethers.utils.keccak256(unstakedBytes);
+                const token = ethers.utils.defaultAbiCoder
+                    .decode(["string"], result.data)[0]
+                    .toString();
+                if (result.args["investor"].toString().toLowerCase() === account){
+                    transactions.push({
+                            amount: amount,
+                            investor: result.args["investor"],
+                            token: token,
+                            type: result.event,
+                            date: d,
+                        });
+                    }
+                }
+                }
+            });
+    return transactions.sort((a, b) => a.date.getTime() - b.date.getTime())
+}
+
 export {
     stake,
     unstake,
-    claimReward,
+    issueRewards,
     getAmountOfTokensStaked,
-    getTransactionHistory
+    getTokenBalance,
+    getHistory
 }

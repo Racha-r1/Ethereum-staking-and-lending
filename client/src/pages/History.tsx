@@ -1,70 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
 import { ToastContainer } from "react-toastify";
-import { getTransactionHistory } from "../api/contract-methods";
-import { ethers, Signer } from "ethers";
-import Event from "../api/Event";
+import { useSelector, useDispatch } from "react-redux";
+import { getTransactionHistory } from "../redux/features/accountSlice";
+import { RootState, AppDispatch } from "../redux/store";
 import Transaction from "../components/Transaction";
 import Nav from "../components/Nav";
 
 const History: React.FC = () => {
-    const [transactions, setTransactions] = useState<Event[]>([]);
+    const { transactions, account } = useSelector((state: RootState) => state.account);
+    const dispatch = useDispatch<AppDispatch>();
 
     React.useEffect(() => {
-        async function getHistory() {
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const signer: Signer = provider.getSigner();
-            const results = await getTransactionHistory(signer);
-            const signatureStakedEvent = "Staked(address,string,uint,uint256)";
-            const signatureUnstakedEvent =
-                "Unstaked(address,string,uint,uint256)";
-            const t: Event[] = new Array();
-            results.forEach(async (result) => {
-                if (result.args) {
-                    const amount = parseInt(
-                        ethers.utils.formatEther(
-                            result.args["amount"].toString()
-                        )
-                    );
-                    const d = new Date(
-                        parseInt(result.args["timestamp"]) * 1000
-                    );
-                    if (result.event === "Staked") {
-                        const stakedBytes: Uint8Array =
-                            ethers.utils.toUtf8Bytes(signatureStakedEvent);
-                        ethers.utils.keccak256(stakedBytes);
-                        const token = ethers.utils.defaultAbiCoder
-                            .decode(["string"], result.data)[0]
-                            .toString();
-                        t.push({
-                            amount: amount,
-                            investor: result.args["investor"],
-                            token: token,
-                            type: result.event,
-                            date: d,
-                        });
-                    }
-                    if (result.event === "Unstaked") {
-                        const unstakedBytes: Uint8Array =
-                            ethers.utils.toUtf8Bytes(signatureUnstakedEvent);
-                        ethers.utils.keccak256(unstakedBytes);
-                        const token = ethers.utils.defaultAbiCoder
-                            .decode(["string"], result.data)[0]
-                            .toString();
-                        t.push({
-                            amount: amount,
-                            investor: result.args["investor"],
-                            token: token,
-                            type: result.event,
-                            date: d,
-                        });
-                    }
-                }
-            });
-            setTransactions(
-                t.sort((a, b) => a.date.getTime() - b.date.getTime())
-            );
+        if (account) {
+            dispatch(getTransactionHistory(account));
         }
-        getHistory();
     }, []);
 
     return (

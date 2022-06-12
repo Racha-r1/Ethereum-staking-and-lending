@@ -3,6 +3,7 @@ import {
     stake,
     getAmountOfTokensStaked,
     unstake,
+    getTokenBalance
 } from "../api/contract-methods";
 import DAI from "../contracts/DAI.json";
 import USDC from "../contracts/USDC.json";
@@ -26,6 +27,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../redux/store";
 import { setShowModal } from "../redux/features/coinsSlice";
 
+
 const StakeModal: React.FC = () => {
     const { currentCoin, showModal } = useSelector(
         (state: RootState) => state.coins
@@ -33,7 +35,7 @@ const StakeModal: React.FC = () => {
     const { account } = useSelector((state: RootState) => state.account);
     const dispatch = useDispatch<AppDispatch>();
     const [amount, setAmount] = React.useState<number>(0);
-    const GANACHE_NETWORK_ID: string = "1";
+    const GANACHE_NETWORK_ID: string = "5777";
     const provider = new ethers.providers.Web3Provider(window.ethereum);
 
     const [balance, setBalance] = React.useState<number>(0);
@@ -66,6 +68,20 @@ const StakeModal: React.FC = () => {
         LINK: LINK,
         USDT: USDT,
     };
+
+    const handleBorrow = async () => {
+        const signer = provider.getSigner();
+        if (contract instanceof Contract) {
+            const liquid = await getTokenBalance(contract.address, signer);
+            if (parseInt(ethers.utils.formatEther(liquid)) <= amount) {
+                toast.error("Sorry we can't process your request right now due to insufficient liquidity of this coin!",{
+                    theme: "dark",
+                });
+                return;
+            }
+            
+        }
+    }
 
     const stakedNotification = (coinName: string) =>
         toast.success(`Succesfully staked ${coinName} to the platform!`, {
@@ -306,6 +322,7 @@ const StakeModal: React.FC = () => {
                                         </div>
                                     </div>
                                 </TabPanel>
+                                
                                 <TabPanel value="2" sx={{ p: 0 }}>
                                     <div className="flex flex-col gap-4 pl-2 pt-2">
                                         <div className="flex pt-2">
@@ -346,7 +363,9 @@ const StakeModal: React.FC = () => {
                                             <p className="font-bold text-red-400"> Note: You will have to provide an equal amount as the lend amount as colletoral</p>
                                             <Button className="w-32"
                                                 variant="outlined"
-                                               
+                                                onClick={async () =>
+                                                    await handleBorrow()
+                                                }
                                             >
                                                 Lend
                                             </Button>

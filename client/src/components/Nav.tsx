@@ -1,6 +1,6 @@
 import React from "react";
 import { FaBars } from "react-icons/fa";
-import Currencies from "../components/Currencies";
+import Currencies from "./Currencies";
 import Account from "../components/Account";
 import { ReactComponent as Metamask } from "../svg/metamask.svg";
 import logo from "../images/logo_transparent.png";
@@ -24,7 +24,7 @@ const Nav: React.FC = () => {
                 </Link>
             </div>
             <nav
-                className={`transition duration-500 ease-in-out flex flex-col lg:flex-row py-5 gap-2 justify-between lg:flex ${
+                className={`transition duration-500 ease-in-out flex flex-col lg:flex-row lg:py-5 gap-2 justify-between lg:flex ${
                     toggle ? "flex" : "hidden"
                 }`}
                 id="nav_content"
