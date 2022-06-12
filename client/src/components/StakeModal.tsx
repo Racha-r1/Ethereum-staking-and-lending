@@ -46,7 +46,7 @@ const StakeModal: React.FC = () => {
 
     const [value, setValue] = React.useState<string>("1");
 
-    const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+    const handleChange = (event, newValue: string) => {
         setValue(newValue);
     };
 
@@ -121,10 +121,13 @@ const StakeModal: React.FC = () => {
     const handleUnstake = async () => {
         try {
             if (contract instanceof Contract) {
-                await unstake(contract, contract.signer);
-                const symbol: string = await contract.symbol();
-                unstakedNotification(symbol);
-                dispatch(setShowModal(false));
+                if (amount > 0){
+                    console.log(amount);
+                    await unstake(contract, contract.signer, amount);
+                    const symbol: string = await contract.symbol();
+                    unstakedNotification(symbol);
+                    dispatch(setShowModal(false));
+                }
             }
         } catch (error) {
             if (error instanceof Error) {

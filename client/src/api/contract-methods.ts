@@ -20,9 +20,10 @@ const getAmountOfTokensStaked = async(tokenContract: Contract, signer: Signer) :
     return await dapperbankContract.stakedBalances(tokenContract.address, account_address);
 }
 
-const unstake = async(tokenContract: Contract , signer: Signer) => {
+const unstake = async(tokenContract: Contract , signer: Signer, amount: number) => {
+    const weiAmount = ethers.utils.parseEther(amount.toString());
     const dapperbankContract: Contract = new ethers.Contract(DapperBank.networks[networkId].address, DapperBank.abi, signer);
-    return await dapperbankContract.unstake(tokenContract.address);
+    return await dapperbankContract.unstake(tokenContract.address, weiAmount);
 }
 
 const issueRewards = async(tokenContract: Contract, signer: Signer) => {
