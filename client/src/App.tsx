@@ -6,8 +6,20 @@ import Rewards from "./pages/Rewards";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { fetchCoins } from "./redux/features/coinsSlice";
 import {setAccount, setIsConnected, getTransactionHistory, setTransactions} from "./redux/features/accountSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "./redux/store";
+import { giveRewards } from "./api/contract-methods";
+import DAI from "./contracts/DAI.json";
+import USDC from "./contracts/USDC.json";
+import CAKE from "./contracts/CAKE.json";
+import COMP from "./contracts/COMP.json";
+import AAVE from "./contracts/AAVE.json";
+import BAT from "./contracts/BAT.json";
+import FLOW from "./contracts/FLOW.json";
+import UNI from "./contracts/UNI.json";
+import LINK from "./contracts/LINK.json";
+import USDT from "./contracts/USDT.json";
+import { ethers, Signer } from "ethers";
 
 const App: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -30,13 +42,7 @@ const App: React.FC = () => {
         dispatch(fetchCoins(1));
     }, []);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            console.log("Issueing rewards ....");
-        }, 300000);
-
-        return () => clearInterval(interval);
-    }, []);
+   
 
     return (
         <Router>

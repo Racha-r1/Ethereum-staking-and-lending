@@ -122,7 +122,6 @@ const StakeModal: React.FC = () => {
         try {
             if (contract instanceof Contract) {
                 if (amount > 0){
-                    console.log(amount);
                     await unstake(contract, contract.signer, amount);
                     const symbol: string = await contract.symbol();
                     unstakedNotification(symbol);

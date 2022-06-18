@@ -2,11 +2,13 @@ import { configureStore } from '@reduxjs/toolkit'
 import CoinsReducer from './features/coinsSlice'
 import AccountReducer from './features/accountSlice'
 
+
 export const store = configureStore({
   reducer: {
     coins: CoinsReducer,
     account: AccountReducer,
   },
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware({serializableCheck: false}),
 })
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

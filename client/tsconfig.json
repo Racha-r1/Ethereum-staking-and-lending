@@ -23,5 +23,5 @@
   },
   "include": [
     "src"
-  ]
+, "../Loader.tsx", "../Currencies.tsx"  ]
 }

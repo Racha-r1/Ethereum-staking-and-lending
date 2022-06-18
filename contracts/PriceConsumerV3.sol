@@ -31,13 +31,13 @@ contract PriceConsumerV3 {
         @return (int) the price of the token in USD
     *****/
     function getLatestPriceOfToken(string memory _symbol) public view returns (int) {
-        (
+          (
             /*uint80 roundID*/,
             int price,
             /*uint startedAt*/,
             /*uint timeStamp*/,
             /*uint80 answeredInRound*/
-        ) = priceFeeds[_symbol].latestRoundData();
-        return price;
+        )  = priceFeeds[_symbol].latestRoundData();
+        return price / 10 ** 8;
     }
 }

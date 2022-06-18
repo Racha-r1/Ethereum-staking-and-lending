@@ -1,5 +1,6 @@
 import { Contract, ethers, Signer, EventFilter } from "ethers";
 import DapperBank from "../contracts/DapperBank.json";
+import DPK from "../contracts/DPK.json";
 import Stake from './Stake';
 import Event from './Event';
 
@@ -26,9 +27,9 @@ const unstake = async(tokenContract: Contract , signer: Signer, amount: number) 
     return await dapperbankContract.unstake(tokenContract.address, weiAmount);
 }
 
-const issueRewards = async(tokenContract: Contract, signer: Signer) => {
+const giveRewards = async(tokenContracts: Contract[], signer: Signer) => {
     const dapperbankContract: Contract = new ethers.Contract(DapperBank.networks[networkId].address, DapperBank.abi, signer);
-    return await dapperbankContract.claimReward(tokenContract.address);
+    return await dapperbankContract.claimRewards(tokenContracts);
 }
 
 const getTransactionHistory = async(signer: Signer) => {
@@ -105,7 +106,7 @@ async function getHistory(account: string) {
 export {
     stake,
     unstake,
-    issueRewards,
+    giveRewards,
     getAmountOfTokensStaked,
     getTokenBalance,
     getHistory

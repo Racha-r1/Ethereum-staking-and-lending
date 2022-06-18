@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { getTransactionHistory } from "../redux/features/accountSlice";
 import { RootState, AppDispatch } from "../redux/store";
 import Transaction from "../components/Transaction";
+import { v4 as uuidv4 } from 'uuid';
 import Nav from "../components/Nav";
 
 const History: React.FC = () => {
@@ -51,7 +52,7 @@ const History: React.FC = () => {
                             </thead>
                             <tbody>
                                 {transactions.map((transaction) => (
-                                    <Transaction event={transaction} />
+                                    <Transaction key={uuidv4()} event={transaction} />
                                 ))}
                             </tbody>
                         </table>

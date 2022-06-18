@@ -1,7 +1,8 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./tokens/DPK.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./PriceConsumerV3.sol";
 
 contract DapperBank  {
 
@@ -10,30 +11,78 @@ contract DapperBank  {
         address token;
         uint amount;
         uint timestamp;
+        bool staked;
+    }
+
+    struct Loan {
+        address issuer;
+        address token;
+        uint intrest;
+        uint amount;
+        uint duration;
+        uint timestamp;
     }
 
     event Staked(
         address indexed investor, 
-        address indexed token,
-        uint indexed amount
+        uint256 indexed timestamp,
+        uint indexed amount,
+        string symbol
+    );
+
+    event Unstaked(
+        address indexed investor, 
+        uint256 indexed timestamp,
+        uint indexed amount,
+        string symbol
+    );
+
+    event Borrowed(
+        address indexed issuer, 
+        uint256 indexed timestamp,
+        uint indexed amount,
+        string symbol
     );
 
     /// @notice token address -> investor address -> amount staked
     mapping(address => mapping(address => Stake)) public stakedBalances;
 
-    /// @notice a user needs to stake his tokens at least for 300 seconds or 5 mins to receive the reward 
-    uint private rewardPeriod = 300;
+    /// @notice token address -> amount of tokens stored in the contract (This way we can now how much liquidity is in the contract)
+    mapping(address => uint256) public  tokenBalances;
 
-    DPK public DpkToken;
+    /// @notice token address -> amount of rewards per user
+    mapping(address => uint) public rewardsEarned;
+
+    /// @notice user address => token address -> amount of tokens stored in the contract
+    mapping(address => mapping(address => uint)) public lockedAssets;
+
+    /// @notice user address -> token address -> amount of tokens loaned
+    mapping(address => mapping(address => Loan)) public loans;
+
+    /// @notice a user needs to stake his tokens at least for 300 seconds or 5 mins to receive the reward 
+    uint256 private rewardPeriod = 120;
+
+    /// @notice the contract of the reward token
+    IERC20 public dpkToken;
+
+    /// @notice price feed contract of Chainlink in order to get off chain data
+    PriceConsumerV3 public PriceConsumer;
+
     address[] public assets;
     address public owner;
-    address public tokenOwner;
+  
+    /// @notice the list of stakers, this will be important in order to issue the rewards
+    address[] public stakers;
+
+    /// @notice this mapping will track how many different tokens the user has staked
+    mapping(address => uint) public distinctTokensStaked;
+
 
     /// @notice constructor -> set owner to the person who deployed the contract
-    /// @param _DpkToken address of the DPK token that we want to use as a reward token for staking
-    constructor(DPK _DpkToken){
+    constructor(address _dpkToken) {
         owner = msg.sender;
-        DpkToken = DPK(_DpkToken);
+        dpkToken = IERC20(_dpkToken);
+        // PriceConsumer = PriceConsumerV3(_PriceConsumer);
     }
 
     /// @param _token The address of any ERC-20 token 
@@ -59,25 +108,54 @@ contract DapperBank  {
 
     /// @param _token the token has to be added to the list of assets
     /// @notice only the owner should be able to add a token to the assets list thats why we use the owner modifier  
-    function addTokenToAssets(address _token) public isOwner{
+    function addTokenToAssets(address _token) external isOwner{
         assets.push(_token);
     }
 
     /// @param _amount the amount of tokens that the user wants to stake
     /// @param _token The address of the ERC-20 token that the user wants to stake
-    function stake(uint _amount, address _token) public payable isAsset(_token) {
+    function stake(uint _amount, address _token) external payable isAsset(_token) {
         require(_amount > 0, "Amount must be greater than 0");
         IERC20(_token).transferFrom(msg.sender, address(this), _amount);
-        Stake memory stake1 = Stake(msg.sender,_token, _amount, block.timestamp);
-        stakedBalances[_token][msg.sender] = stake1;
-        emit Staked(msg.sender, _token, _amount);
+
+        if(stakedBalances[_token][msg.sender].amount == 0){
+            distinctTokensStaked[msg.sender] += 1;
+        }
+
+        if(distinctTokensStaked[msg.sender] == 1){
+            stakers.push(msg.sender);
+        }
+
+        stakedBalances[_token][msg.sender].investor = msg.sender;
+        stakedBalances[_token][msg.sender].token = _token;
+        stakedBalances[_token][msg.sender].amount += _amount;
+
+        if (stakedBalances[_token][msg.sender].timestamp == 0){
+            stakedBalances[_token][msg.sender].timestamp = block.timestamp;
+        }
+
+        stakedBalances[_token][msg.sender].staked = true;
+        tokenBalances[_token] += _amount;
+        string memory _symbol = ERC20(_token).symbol();
+        emit Staked(msg.sender, block.timestamp, _amount, _symbol);
     }
 
     /// @param _token The address of the ERC-20 token that the user wants to unstake
-    function unstake(address _token) public isAsset(_token){
+    function unstake(address _token, uint amount) external isAsset(_token){
         require(stakedBalances[_token][msg.sender].amount > 0, "Balance must be greater than 0");
-        IERC20(_token).transfer(msg.sender, stakedBalances[_token][msg.sender].amount);
-        stakedBalances[_token][msg.sender].amount = 0;
+        require(stakedBalances[_token][msg.sender].amount >= amount , "The amount that you want to withdraw is to high");
+        IERC20(_token).transfer(msg.sender, amount);
+        stakedBalances[_token][msg.sender].amount = stakedBalances[_token][msg.sender].amount - amount;
+
+        if (stakedBalances[_token][msg.sender].amount == 0){
+            stakedBalances[_token][msg.sender].timestamp = 0;
+            stakedBalances[_token][msg.sender].staked = false;
+            stakedBalances[_token][msg.sender].token = address(0);
+        }
+
+        tokenBalances[_token] = tokenBalances[_token] - amount;
+        string memory _symbol = ERC20(_token).symbol();
+        emit Unstaked(msg.sender, block.timestamp, amount, _symbol);
     }
 
 
@@ -86,21 +164,76 @@ contract DapperBank  {
         return assets;
     }
 
-    function mintTokens(address _to, uint _amount) public{
-        DpkToken.mint(_to, _amount);
+    /// @notice reward is determined based on the amount of time that the user has staked (1 token = 5 mins)
+    function claimRewards(address[] memory _tokens) external {
+        for (uint i=0; i < _tokens.length; i+=1){
+            uint reward;
+            // uint priceForRewardToken = 15;
+            // uint priceOfToken = uint256(PriceConsumer.getLatestPriceOfToken(symbol));
+            Stake storage stakeStruct = stakedBalances[_tokens[i]][msg.sender];
+
+            if (stakeStruct.amount > 0 && stakeStruct.timestamp > 0) {
+                reward = (uint(block.timestamp - stakeStruct.timestamp) / uint(rewardPeriod)) * (10**18);
+
+                if (reward > 0) {
+                    if(dpkToken.transfer(msg.sender, reward)){
+                        rewardsEarned[msg.sender] += reward;
+                        // reset timestamp
+                        stakeStruct.timestamp = block.timestamp;
+                        stakedBalances[_tokens[i]][msg.sender] = stakeStruct;
+                    }
+                }   
+            }
+        }
     }
 
-    /// @param _token The address of the ERC-20 token that the user has staked
-    /// @notice reward is determined based on the amount of time that the user has staked (1 token = 5 mins)
-    function claimReward(address _token) public isAsset(_token) {
-        Stake memory stake1 = stakedBalances[_token][msg.sender];
-        require(stake1.amount > 0, "You must stake some tokens before you can claim a reward!");
-        uint claimInterval = 60;
-        uint reward = (block.timestamp - stake1.timestamp) / 60;
-        if (DpkToken.balanceOf(address(this)) < reward) {
-            /// mint some tokens and send it to this contract
-            mintTokens(address(this), 1000000 * 10 ** 18);
+    /// @param _amount The amount that the issuer wants to get from his loan
+    /// @param _token The address of the ERC-20 token that the issuer wants to get from his loan
+    function takeLoan(uint _amount, address _token) external {
+        require(tokenBalances[_token] > _amount, "Insufficient liquidity for the token");
+        IERC20(_token).transferFrom(msg.sender, address(this), _amount);
+        IERC20(_token).transfer(msg.sender, _amount);
+        uint intrest = (_amount / 100) * 5;
+        uint duration = 120;
+        Loan memory loan = Loan(
+            msg.sender,
+            _token,
+            intrest,
+            _amount,
+            duration,
+            block.timestamp
+        );
+        
+        loans[msg.sender][_token] = loan;
+        lockedAssets[msg.sender][_token] += _amount;
+        emit Borrowed(msg.sender, block.timestamp, _amount, ERC20(_token).symbol());
+    }
+
+    function repayLoan(address _token) external {
+        require(loans[msg.sender][_token].amount > 0, "You do not have a loan");
+
+        if (block.timestamp > loans[msg.sender][_token].timestamp + loans[msg.sender][_token].duration){
+            // take colleteral from him because he couldn't pay the loan in time
+            tokenBalances[_token] += lockedAssets[msg.sender][_token];
+            lockedAssets[msg.sender][_token] = 0;
         }
-        DpkToken.transfer(msg.sender, reward);
+
+        else {
+            uint total = loans[msg.sender][_token].amount + loans[msg.sender][_token].intrest;
+            IERC20(_token).transferFrom(msg.sender, address(this), total);
+            IERC20(_token).transfer(msg.sender, lockedAssets[msg.sender][_token]);
+            lockedAssets[msg.sender][_token] = 0;
+        }
+
+        // reset loan
+        Loan memory l = loans[msg.sender][_token];
+        l.issuer = address(0);
+        l.amount = 0;
+        l.intrest = 0;
+        l.duration = 0;
+        l.timestamp = 0;
+        l.token = address(0);
+
+        loans[msg.sender][_token] = l;
     }
 }
