@@ -7,7 +7,7 @@ interface Props {
 
 const Transaction: React.FC<Props> = ({ event }) => {
     return (
-        <tr className="text-left text-medium opacity-100 hover:bg-blue-100">
+        <tr className={`text-left text-medium opacity-100 hover:bg-blue-100 ${event.success ? 'bg-green-100' : event.success === false ? 'bg-red-100' : ''}`}>
             <td className="lg:p-3 p-2 hidden lg:table-cell">
                 {" "}
                 {event.investor}

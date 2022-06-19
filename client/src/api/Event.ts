@@ -4,4 +4,5 @@ export default interface Event {
     date: Date;
     investor: string;
     token: string;
+    success?: boolean;
 }

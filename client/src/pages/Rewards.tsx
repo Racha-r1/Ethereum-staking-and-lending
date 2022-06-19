@@ -93,9 +93,9 @@ const Rewards: React.FC = () => {
                                         You currently have 0 DPK tokens, be sure to
                                         stake in order to get the DPK token as a staking
                                         reward. <br />
-                                        Click the claim rewards button to claim your rewards (after every 2 minutes).
+                                        Click the claim rewards button to claim your rewards (after every minute).
                                     </h1>
-                                    <h1 className="text-red-600 mt-2"> Note: You can only claim a reward after every 2 minutes, claiming rewards more than once every 2 minutes will result in a waste of funds because of the gas fees</h1>
+                                    <h1 className="text-red-600 mt-2"> Note: You can only claim a reward after every minute, claiming rewards more than once in a minute will result in a waste of funds because of the gas fees</h1>
                                 </div>
                             </div>
                             <Button variant="outlined" className="w-max" onClick={async() => await claim()}>
@@ -112,9 +112,9 @@ const Rewards: React.FC = () => {
                                     <div className="flex flex-col">
                                         <h1>
                                             You currently have {balance} DPK tokens.<br />
-                                            Click the claim rewards button to claim your rewards (after every 2 minutes).
+                                            Click the claim rewards button to claim your rewards (after every minute).
                                         </h1>
-                                        <h1 className="text-red-600 mt-2"> Note: You can only claim a reward after every 2 minutes, claiming rewards more than once every 2 minutes will result in a waste of funds because of the gas fees</h1>
+                                        <h1 className="text-red-600 mt-2"> Note: You can only claim a reward after every minute, claiming rewards more than once in a minute will result in a waste of funds because of the gas fees</h1>
                                     </div>
                                 </div>
                                 <Button variant="outlined" className="w-max" onClick={async() => await claim()}>

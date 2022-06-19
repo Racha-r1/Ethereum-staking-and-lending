@@ -44,6 +44,14 @@ contract DapperBank  {
         string symbol
     );
 
+    event Repaid(
+        address indexed borrower,
+        uint indexed amount,
+        bool indexed success,
+        uint256 timestamp,
+        string symbol
+    );
+
     /// @notice token address -> investor address -> amount staked
     mapping(address => mapping(address => Stake)) public stakedBalances;
 
@@ -53,14 +61,17 @@ contract DapperBank  {
     /// @notice token address -> amount of rewards per user
     mapping(address => uint) public rewardsEarned;
 
-    /// @notice user address => token address -> amount of tokens stored in the contract
+    /// @notice user address => token address -> amount of tokens that are locked due to a lend
     mapping(address => mapping(address => uint)) public lockedAssets;
+
+    /// @notice user address => token address -> amount of rewards that are locked due to a lend
+    mapping(address => mapping(address => uint)) public lockedRewards;
 
     /// @notice user address -> token address -> amount of tokens loaned
     mapping(address => mapping(address => Loan)) public loans;
 
     /// @notice a user needs to stake his tokens at least for 300 seconds or 5 mins to receive the reward 
-    uint256 private rewardPeriod = 120;
+    uint256 private rewardPeriod = 60;
 
     /// @notice the contract of the reward token
     IERC20 public dpkToken;
@@ -168,13 +179,13 @@ contract DapperBank  {
     function claimRewards(address[] memory _tokens) external {
         for (uint i=0; i < _tokens.length; i+=1){
             uint reward;
-            // uint priceForRewardToken = 15;
-            // uint priceOfToken = uint256(PriceConsumer.getLatestPriceOfToken(symbol));
             Stake storage stakeStruct = stakedBalances[_tokens[i]][msg.sender];
+            uint tokenAmount = stakeStruct.amount / 10**18;
+            uint multiplier = tokenAmount / 100; // 1 DPK token for each 100 tokens staked
 
             if (stakeStruct.amount > 0 && stakeStruct.timestamp > 0) {
-                reward = (uint(block.timestamp - stakeStruct.timestamp) / uint(rewardPeriod)) * (10**18);
-
+                reward = ((uint(block.timestamp - stakeStruct.timestamp) / uint(rewardPeriod)) * multiplier) * (10**18);
+               
                 if (reward > 0) {
                     if(dpkToken.transfer(msg.sender, reward)){
                         rewardsEarned[msg.sender] += reward;
@@ -189,40 +200,63 @@ contract DapperBank  {
 
     /// @param _amount The amount that the issuer wants to get from his loan
     /// @param _token The address of the ERC-20 token that the issuer wants to get from his loan
-    function takeLoan(uint _amount, address _token) external {
+    function takeLoan(uint _amount, address _token) external payable isAsset(_token){
         require(tokenBalances[_token] > _amount, "Insufficient liquidity for the token");
+        require(loans[msg.sender][_token].amount == 0, "You already have a loan");
         IERC20(_token).transferFrom(msg.sender, address(this), _amount);
         IERC20(_token).transfer(msg.sender, _amount);
         uint intrest = (_amount / 100) * 5;
         uint duration = 120;
-        Loan memory loan = Loan(
-            msg.sender,
-            _token,
-            intrest,
-            _amount,
-            duration,
-            block.timestamp
-        );
-        
+        Loan memory loan = Loan(msg.sender, _token, intrest, _amount, duration, block.timestamp);
         loans[msg.sender][_token] = loan;
         lockedAssets[msg.sender][_token] += _amount;
+        tokenBalances[_token] = tokenBalances[_token] - _amount;
         emit Borrowed(msg.sender, block.timestamp, _amount, ERC20(_token).symbol());
     }
 
-    function repayLoan(address _token) external {
+    function repayLoan(address _token) external payable isAsset(_token){
         require(loans[msg.sender][_token].amount > 0, "You do not have a loan");
+        string memory _symbol = ERC20(_token).symbol();
 
-        if (block.timestamp > loans[msg.sender][_token].timestamp + loans[msg.sender][_token].duration){
+        if (block.timestamp > (loans[msg.sender][_token].timestamp + loans[msg.sender][_token].duration)){
             // take colleteral from him because he couldn't pay the loan in time
             tokenBalances[_token] += lockedAssets[msg.sender][_token];
+            emit Repaid(msg.sender, lockedAssets[msg.sender][_token], false, block.timestamp, _symbol);
             lockedAssets[msg.sender][_token] = 0;
+
+            // also take the rewards that he got on the locked assets
+            lockedRewards[msg.sender][_token] = 0;
         }
 
         else {
             uint total = loans[msg.sender][_token].amount + loans[msg.sender][_token].intrest;
             IERC20(_token).transferFrom(msg.sender, address(this), total);
-            IERC20(_token).transfer(msg.sender, lockedAssets[msg.sender][_token]);
-            lockedAssets[msg.sender][_token] = 0;
+            tokenBalances[_token] += lockedAssets[msg.sender][_token];
+
+            uint lockedMultiplier;
+
+            // calculate yield on the locked assets
+            lockedMultiplier = lockedAssets[msg.sender][_token] / 10**20;
+
+            uint rewardsForLockedAssets = ((uint(block.timestamp - loans[msg.sender][_token].timestamp) / uint(rewardPeriod)) * lockedMultiplier) * (10**18);
+
+            // add lockedRewards
+            if(rewardsForLockedAssets > 0){
+                lockedRewards[msg.sender][_token] += rewardsForLockedAssets;
+            }
+
+            if(IERC20(_token).transfer(msg.sender, lockedAssets[msg.sender][_token])){
+                lockedAssets[msg.sender][_token] = 0;
+            }
+
+            // pay the rewards that he got on the locked assets
+            if(lockedRewards[msg.sender][_token] > 0){
+                if(IERC20(dpkToken).transfer(msg.sender, lockedRewards[msg.sender][_token])){
+                    lockedRewards[msg.sender][_token] = 0;
+                }
+            }
+
+            emit Repaid(msg.sender, total, true, block.timestamp, _symbol);
         }
 
         // reset loan

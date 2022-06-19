@@ -3,7 +3,10 @@ import {
     stake,
     getAmountOfTokensStaked,
     unstake,
-    getTokenBalance
+    makeLoan,
+    getTokenBalance,
+    getLoanAmount,
+    repayDebt
 } from "../api/contract-methods";
 import DAI from "../contracts/DAI.json";
 import USDC from "../contracts/USDC.json";
@@ -43,6 +46,7 @@ const StakeModal: React.FC = () => {
         undefined
     );
     const [stakedBalance, setStakedBalance] = React.useState<number>(0);
+    const [loanAmount, setLoanAmount] = React.useState<number>(0);
 
     const [value, setValue] = React.useState<string>("1");
 
@@ -70,16 +74,50 @@ const StakeModal: React.FC = () => {
     };
 
     const handleBorrow = async () => {
-        const signer = provider.getSigner();
-        if (contract instanceof Contract) {
-            const liquid = await getTokenBalance(contract.address, signer);
-            if (parseInt(ethers.utils.formatEther(liquid)) <= amount) {
-                toast.error("Sorry we can't process your request right now due to insufficient liquidity of this coin!",{
+        if(loanAmount === 0) {
+            const signer = provider.getSigner();
+            if (contract instanceof Contract) {
+                const liquid = await getTokenBalance(contract.address, signer);
+                if (parseInt(ethers.utils.formatEther(liquid)) <= amount) {
+                    toast.error("Sorry we can't process your request right now due to insufficient liquidity of this coin!",{
+                        theme: "dark",
+                    });
+                    return;
+                }
+                const tx = await makeLoan(contract, amount, signer);
+                await tx.wait();
+                toast.success("Loan request sent successfully!",{
                     theme: "dark",
                 });
-                return;
+                dispatch(setShowModal(false));
             }
-            
+            return;
+        }
+        toast.error("You currently already have a loan, please repay that first!",{
+            theme: "dark",
+        });
+    }
+
+    const repay = async() => {
+        const signer = provider.getSigner();
+        if (contract instanceof Contract){
+            if (loanAmount > 0) {
+                const tx = await repayDebt(contract, loanAmount, signer);
+                const receipt = await tx.wait();
+                const args = receipt.events.find(({ event }) => event === 'Repaid').args
+                const {success} = args;
+                if (success) {
+                    toast.success("Debt repaid successfully!",{
+                        theme: "dark",
+                    });
+                }
+                else {
+                    toast.error("You were not on time in repaying your debt so we've taken your colleteral",{
+                        theme: "dark",
+                    });
+                }
+                dispatch(setShowModal(false));
+            }
         }
     }
 
@@ -156,7 +194,13 @@ const StakeModal: React.FC = () => {
                         );
                         setStakedBalance(stakedBalance);
                     });
-
+                    
+                    getLoanAmount(contract, signer).then((loan) => {
+                        const loanAmount = parseInt(
+                            ethers.utils.formatEther(loan.amount.toString())
+                        );
+                        setLoanAmount(loanAmount);
+                    });
                     contract.balanceOf(account).then((balance: number) => {
                         balance = parseInt(
                             ethers.utils.formatEther(balance.toString())
@@ -188,6 +232,13 @@ const StakeModal: React.FC = () => {
                             ethers.utils.formatEther(staked.amount.toString())
                         );
                         setStakedBalance(stakedBalance);
+                    });
+
+                    getLoanAmount(contract, signer).then((loan) => {
+                        const loanAmount = parseInt(
+                            ethers.utils.formatEther(loan.amount.toString())
+                        );
+                        setLoanAmount(loanAmount);
                     });
 
                     contract.balanceOf(account).then((balance: number) => {
@@ -266,7 +317,11 @@ const StakeModal: React.FC = () => {
                                                     {" "}
                                                     {stakedBalance > 0
                                                         ? "Amount staked: " +
-                                                          stakedBalance
+                                                          (stakedBalance + loanAmount)
+                                                        : ""}
+                                                        <br/> 
+                                                        {loanAmount > 0
+                                                            ? "Locked amount: " + loanAmount
                                                         : ""}
                                                 </p>
                                             </div>
@@ -327,6 +382,15 @@ const StakeModal: React.FC = () => {
                                 
                                 <TabPanel value="2" sx={{ p: 0 }}>
                                     <div className="flex flex-col gap-4 pl-2 pt-2">
+                                            <div className="flex justify-between flex-wrap">
+                                                <p className="opacity-60 text-sm">
+                                                    {" "}
+                                                    {loanAmount > 0
+                                                        ? "Amount of tokens lend: " +
+                                                        loanAmount
+                                                        : ""}
+                                                </p>
+                                            </div>
                                         <div className="flex pt-2">
                                             {currentCoin && (
                                                 <div className="flex items-center gap-4 pb-4">
@@ -363,14 +427,24 @@ const StakeModal: React.FC = () => {
                                         <div className="flex flex-col rounded-b border-gray-200 dark:border-gray-600 gap-2">
                                             <p className="font-bold"> Borrow rate: 5% </p>
                                             <p className="font-bold text-red-400"> Note: You will have to provide an equal amount as the lend amount as colletoral</p>
-                                            <Button className="w-32"
-                                                variant="outlined"
-                                                onClick={async () =>
-                                                    await handleBorrow()
-                                                }
-                                            >
-                                                Lend
-                                            </Button>
+                                            <div className="flex justify-between rounded-b border-gray-200 dark:border-gray-600">
+                                                <Button className="w-32"
+                                                    variant="outlined"
+                                                    onClick={async () =>
+                                                        await handleBorrow()
+                                                    }
+                                                >
+                                                    Lend
+                                                </Button>
+                                                {loanAmount > 0 && (
+                                                    <Button
+                                                        variant="outlined"
+                                                        onClick={async() => await repay()}
+                                                    >
+                                                        Repay Loan
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </TabPanel>
