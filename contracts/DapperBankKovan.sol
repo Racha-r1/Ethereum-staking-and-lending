@@ -4,7 +4,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./PriceConsumerV3.sol";
 
-contract DapperBank  {
+contract DapperBankKovan  {
 
     struct Stake {
         address investor;
@@ -76,6 +76,9 @@ contract DapperBank  {
     /// @notice the contract of the reward token
     IERC20 public dpkToken;
 
+    /// @notice price feed contract of Chainlink in order to get off chain data
+    PriceConsumerV3 public priceConsumer;
+
     address[] public assets;
     address public owner;
   
@@ -87,9 +90,10 @@ contract DapperBank  {
 
 
     /// @notice constructor -> set owner to the person who deployed the contract
-    constructor(address _dpkToken) {
+    constructor(address _dpkToken, address _priceConsumer) {
         owner = msg.sender;
         dpkToken = IERC20(_dpkToken);
+        priceConsumer = PriceConsumerV3(_priceConsumer);
     }
 
     /// @param _token The address of any ERC-20 token 
@@ -175,9 +179,11 @@ contract DapperBank  {
     function claimRewards(address[] memory _tokens) external {
         for (uint i=0; i < _tokens.length; i+=1){
             uint reward;
+            string memory _symbol = ERC20(_token).symbol();
             Stake storage stakeStruct = stakedBalances[_tokens[i]][msg.sender];
             uint tokenAmount = stakeStruct.amount / 10**18;
-            uint multiplier = tokenAmount / 100; // 1 DPK token for each 100 tokens staked
+            uint usdPrice = priceConsumer.getLatestPriceOfToken(_symbol);
+            uint multiplier = (tokenAmount * usdPrice) / 100; // 1 DPK token for each 100 USD staked
 
             if (stakeStruct.amount > 0 && stakeStruct.timestamp > 0) {
                 reward = ((uint(block.timestamp - stakeStruct.timestamp) / uint(rewardPeriod)) * multiplier) * (10**18);
@@ -228,11 +234,11 @@ contract DapperBank  {
             uint total = loans[msg.sender][_token].amount + loans[msg.sender][_token].intrest;
             IERC20(_token).transferFrom(msg.sender, address(this), total);
             tokenBalances[_token] += lockedAssets[msg.sender][_token];
-
-            uint lockedMultiplier;
-
+            
             // calculate yield on the locked assets
-            lockedMultiplier = lockedAssets[msg.sender][_token] / 10**20;
+            uint usdPrice = priceConsumer.getLatestPriceOfToken(_symbol);
+            uint tokenAmount = lockedAssets[msg.sender][_token] / 10**18;
+            uint multiplier = (lockedMultiplier * usdPrice) / 100; // 1 DPK token for each 100 USD staked
 
             uint rewardsForLockedAssets = ((uint(block.timestamp - loans[msg.sender][_token].timestamp) / uint(rewardPeriod)) * lockedMultiplier) * (10**18);
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
@@ -9,20 +10,15 @@ contract PriceConsumerV3 {
 
     // All the price feeds will return a dollar amount (<token_symbol>/USD)
     constructor(){
-        priceFeeds["ETH"]   =  AggregatorV3Interface(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
-        priceFeeds["DAI"]   =  AggregatorV3Interface(0xeE636E1f7A0A846EEc2385E729CeA7D1b339D40D);
-        priceFeeds["AAVE"]  =  AggregatorV3Interface(0x547a514d5e3769680Ce22B2361c10Ea13619e8a9);
-        priceFeeds["BAT"]   =  AggregatorV3Interface(0x9441D7556e7820B5ca42082cfa99487D56AcA958);
-        priceFeeds["CAKE"]  =  AggregatorV3Interface(0xEb0adf5C06861d6c07174288ce4D0a8128164003);
-        priceFeeds["COMP"]  =  AggregatorV3Interface(0xdbd020CAeF83eFd542f4De03e3cF0C28A4428bd5);
-        priceFeeds["LINK"]  =  AggregatorV3Interface(0x2c1d072e956AFFC0D435Cb7AC38EF18d24d9127c);
-        priceFeeds["FLOW"]  =  AggregatorV3Interface(0xD9BdD9f5ffa7d89c846A5E3231a093AE4b3469D2);
-        priceFeeds["ZRX"]   =  AggregatorV3Interface(0x2885d15b8Af22648b98B122b22FDF4D2a56c6023);
-        priceFeeds["YFI"]   =  AggregatorV3Interface(0xA027702dbb89fbd58938e4324ac03B58d812b0E1);
+        priceFeeds["ETH"]   =  AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
+        priceFeeds["DAI"]   =  AggregatorV3Interface(0x777A68032a88E5A84678A77Af2CD65A7b3c0775a);
+        priceFeeds["BAT"]   =  AggregatorV3Interface(0x8e67A0CFfbbF6A346ce87DFe06daE2dc782b3219);
+        priceFeeds["COMP"]  =  AggregatorV3Interface(0xECF93D14d25E02bA2C13698eeDca9aA98348EFb6);
+        priceFeeds["LINK"]  =  AggregatorV3Interface(0x396c5E36DD0a0F5a5D33dae44368D4193f69a1F0);
+        priceFeeds["ZRX"]   =  AggregatorV3Interface(0x24D6B177CF20166cd8F55CaaFe1c745B44F6c203);
         priceFeeds["USDC"]  =  AggregatorV3Interface(0x9211c6b3BF41A10F78539810Cf5c64e1BB78Ec60);
         priceFeeds["USDT"]  =  AggregatorV3Interface(0x2ca5A90D34cA333661083F89D831f757A9A50148);
         priceFeeds["UNI"]   =  AggregatorV3Interface(0xDA5904BdBfB4EF12a3955aEcA103F51dc87c7C39);
-        priceFeeds["SUSHI"] =  AggregatorV3Interface(0xCc70F09A6CC17553b2E31954cD36E4A2d89501f7);
     }
 
     /****
