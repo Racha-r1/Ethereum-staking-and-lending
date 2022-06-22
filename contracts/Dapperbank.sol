@@ -78,12 +78,6 @@ contract DapperBank  {
 
     address[] public assets;
     address public owner;
-  
-    /// @notice the list of stakers, this will be important in order to issue the rewards
-    address[] public stakers;
-
-    /// @notice this mapping will track how many different tokens the user has staked
-    mapping(address => uint) public distinctTokensStaked;
 
 
     /// @notice constructor -> set owner to the person who deployed the contract
@@ -124,14 +118,6 @@ contract DapperBank  {
     function stake(uint _amount, address _token) external payable isAsset(_token) {
         require(_amount > 0, "Amount must be greater than 0");
         IERC20(_token).transferFrom(msg.sender, address(this), _amount);
-
-        if(stakedBalances[_token][msg.sender].amount == 0){
-            distinctTokensStaked[msg.sender] += 1;
-        }
-
-        if(distinctTokensStaked[msg.sender] == 1){
-            stakers.push(msg.sender);
-        }
 
         stakedBalances[_token][msg.sender].investor = msg.sender;
         stakedBalances[_token][msg.sender].token = _token;

@@ -1,4 +1,6 @@
 const path = require("path");
+const HDWalletProvider = require("@truffle/hdwallet-provider");
+require('dotenv').config();
 
 module.exports = {
     compilers: {
@@ -13,12 +15,18 @@ module.exports = {
             port: 8545,
             network_id: 5777,
         },
-        mainlocal: {
-            host: '127.0.0.1',
-            port: 8545,
-            network_id: '*',
-            skipDryRun: true,
-            gas: 6000000
+        kovan: {
+            provider: () => new HDWalletProvider({
+                mnemonic: {
+                  phrase: process.env.MNEMONIC
+                },
+                providerOrUrl: process.env.INFURA_API_KEY
+            }),
+            network_id: 42,
+            gasPrice: 25000000,
+            confirmations: 2,
+            timeoutBlocks: 200,
+            skipDryRun: true
         }
-    },
-};
+    }
+}

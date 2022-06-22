@@ -179,10 +179,10 @@ contract DapperBankKovan  {
     function claimRewards(address[] memory _tokens) external {
         for (uint i=0; i < _tokens.length; i+=1){
             uint reward;
-            string memory _symbol = ERC20(_token).symbol();
+            string memory _symbol = ERC20(_tokens[i]).symbol();
             Stake storage stakeStruct = stakedBalances[_tokens[i]][msg.sender];
             uint tokenAmount = stakeStruct.amount / 10**18;
-            uint usdPrice = priceConsumer.getLatestPriceOfToken(_symbol);
+            uint usdPrice = uint(priceConsumer.getLatestPriceOfToken(_symbol));
             uint multiplier = (tokenAmount * usdPrice) / 100; // 1 DPK token for each 100 USD staked
 
             if (stakeStruct.amount > 0 && stakeStruct.timestamp > 0) {
@@ -236,11 +236,11 @@ contract DapperBankKovan  {
             tokenBalances[_token] += lockedAssets[msg.sender][_token];
             
             // calculate yield on the locked assets
-            uint usdPrice = priceConsumer.getLatestPriceOfToken(_symbol);
+            uint usdPrice = uint(priceConsumer.getLatestPriceOfToken(_symbol));
             uint tokenAmount = lockedAssets[msg.sender][_token] / 10**18;
-            uint multiplier = (lockedMultiplier * usdPrice) / 100; // 1 DPK token for each 100 USD staked
+            uint multiplier = (tokenAmount * usdPrice) / 100; // 1 DPK token for each 100 USD staked
 
-            uint rewardsForLockedAssets = ((uint(block.timestamp - loans[msg.sender][_token].timestamp) / uint(rewardPeriod)) * lockedMultiplier) * (10**18);
+            uint rewardsForLockedAssets = ((uint(block.timestamp - loans[msg.sender][_token].timestamp) / uint(rewardPeriod)) * multiplier) * (10**18);
 
             // add lockedRewards
             if(rewardsForLockedAssets > 0){

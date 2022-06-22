@@ -14,137 +14,347 @@ const ZRX = artifacts.require("./tokens/ZRX.sol");
 const AAVE = artifacts.require("./tokens/AAVE.sol");
 const Dapperbank = artifacts.require("./Dapperbank.sol");
 const PriceConsumerV3 = artifacts.require("./PriceConsumerV3.sol");
+const DapperBankKovan = artifacts.require("./DapperBankKovan.sol");
+require('dotenv').config();
 
 module.exports = async function (deployer, network, accounts) {
-    // deploy the tokens
-    await deployer.deploy(Dai);
-    await deployer.deploy(USDC);
-    await deployer.deploy(BAT);
-    await deployer.deploy(CAKE);
-    await deployer.deploy(FLOW);
-    await deployer.deploy(COMP);
-    await deployer.deploy(LINK);
-    await deployer.deploy(SUSHI);
-    await deployer.deploy(UNI);
-    await deployer.deploy(USDT);
-    await deployer.deploy(YFI);
-    await deployer.deploy(ZRX);
-    await deployer.deploy(PriceConsumerV3);
-    await deployer.deploy(AAVE);
-    await deployer.deploy(DPK);
 
-    // get the deployed contracts
-    const daiContract = await Dai.deployed();
-    const usdcContract = await USDC.deployed();
-    const batContract = await BAT.deployed();
-    const cakeContract = await CAKE.deployed();
-    const flowContract = await FLOW.deployed();
-    const compContract = await COMP.deployed();
-    const linkContract = await LINK.deployed();
-    const sushiContract = await SUSHI.deployed();
-    const uniContract = await UNI.deployed();
-    const usdtContract = await USDT.deployed();
-    const yfiContract = await YFI.deployed();
-    const zrxContract = await ZRX.deployed();
-    const dpkContract = await DPK.deployed();
-    const aaveContract = await AAVE.deployed();
-    const priceConsumerV3Contract = await PriceConsumerV3.deployed();
-    await deployer.deploy(Dapperbank,dpkContract.address);
-    const dapperbankContract = await Dapperbank.deployed();
-    dpkContract.transferOwnership(dapperbankContract.address, {from: accounts[0]});
+    if(network == "develop"){
+        // deploy the tokens
+        await deployer.deploy(Dai);
+        await deployer.deploy(USDC);
+        await deployer.deploy(BAT);
+        await deployer.deploy(CAKE);
+        await deployer.deploy(FLOW);
+        await deployer.deploy(COMP);
+        await deployer.deploy(LINK);
+        await deployer.deploy(SUSHI);
+        await deployer.deploy(UNI);
+        await deployer.deploy(USDT);
+        await deployer.deploy(YFI);
+        await deployer.deploy(ZRX);
+        await deployer.deploy(AAVE);
+        await deployer.deploy(DPK);
+
+        // get the deployed contracts
+        const daiContract = await Dai.deployed();
+        const usdcContract = await USDC.deployed();
+        const batContract = await BAT.deployed();
+        const cakeContract = await CAKE.deployed();
+        const flowContract = await FLOW.deployed();
+        const compContract = await COMP.deployed();
+        const linkContract = await LINK.deployed();
+        const sushiContract = await SUSHI.deployed();
+        const uniContract = await UNI.deployed();
+        const usdtContract = await USDT.deployed();
+        const yfiContract = await YFI.deployed();
+        const zrxContract = await ZRX.deployed();
+        const dpkContract = await DPK.deployed();
+        const aaveContract = await AAVE.deployed();
+        await deployer.deploy(Dapperbank,dpkContract.address);
+        const dapperbankContract = await Dapperbank.deployed();
+        dpkContract.transferOwnership(dapperbankContract.address, {from: accounts[0]});
 
 
-    // add the tokens to the assets
-    await dapperbankContract.addTokenToAssets(daiContract.address);
-    await dapperbankContract.addTokenToAssets(usdcContract.address);
-    await dapperbankContract.addTokenToAssets(batContract.address);
-    await dapperbankContract.addTokenToAssets(cakeContract.address);
-    await dapperbankContract.addTokenToAssets(flowContract.address);
-    await dapperbankContract.addTokenToAssets(compContract.address);
-    await dapperbankContract.addTokenToAssets(linkContract.address);
-    await dapperbankContract.addTokenToAssets(sushiContract.address);
-    await dapperbankContract.addTokenToAssets(uniContract.address);
-    await dapperbankContract.addTokenToAssets(usdtContract.address);
-    await dapperbankContract.addTokenToAssets(yfiContract.address);
-    await dapperbankContract.addTokenToAssets(zrxContract.address);
-    await dapperbankContract.addTokenToAssets(zrxContract.address);
-    await dapperbankContract.addTokenToAssets(aaveContract.address);
+        // add the tokens to the assets
+        await dapperbankContract.addTokenToAssets(daiContract.address);
+        await dapperbankContract.addTokenToAssets(usdcContract.address);
+        await dapperbankContract.addTokenToAssets(batContract.address);
+        await dapperbankContract.addTokenToAssets(cakeContract.address);
+        await dapperbankContract.addTokenToAssets(flowContract.address);
+        await dapperbankContract.addTokenToAssets(compContract.address);
+        await dapperbankContract.addTokenToAssets(linkContract.address);
+        await dapperbankContract.addTokenToAssets(sushiContract.address);
+        await dapperbankContract.addTokenToAssets(uniContract.address);
+        await dapperbankContract.addTokenToAssets(usdtContract.address);
+        await dapperbankContract.addTokenToAssets(yfiContract.address);
+        await dapperbankContract.addTokenToAssets(zrxContract.address);
+        await dapperbankContract.addTokenToAssets(aaveContract.address);
 
-    // transfer the dapperbank tokens to the dapperbank contract and pass the other tokens to accounts[1] which will act as our investor
-    await dpkContract.transfer(
-        dapperbankContract.address,
-        web3.utils.toWei("1000000", "ether"),
-        { from: accounts[0] }
-    );
-    await usdcContract.transfer(
-        accounts[1],
-        web3.utils.toWei("500000", "ether"),
-        { from: accounts[0] }
-    );
+        // transfer the dapperbank tokens to the dapperbank contract and pass the other tokens to  which will act as our investor
+        await dpkContract.transfer(
+            dapperbankContract.address,
+            web3.utils.toWei("1000000", "ether"),
+            { from: accounts[0] }
+        );
+        await usdcContract.transfer(
+            accounts[1],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
 
-    await usdcContract.transfer(
-        accounts[2],
-        web3.utils.toWei("500000", "ether"),
-        { from: accounts[0] }
-    );
-    await aaveContract.transfer(
-        accounts[1],
-        web3.utils.toWei("1000000", "ether"),
-        { from: accounts[0] }
-    );
-    await daiContract.transfer(
-        accounts[1],
-        web3.utils.toWei("1000000", "ether"),
-        { from: accounts[0] }
-    );
-    await batContract.transfer(
-        accounts[1],
-        web3.utils.toWei("1000000", "ether"),
-        { from: accounts[0] }
-    );
-    await cakeContract.transfer(
-        accounts[1],
-        web3.utils.toWei("1000000", "ether"),
-        { from: accounts[0] }
-    );
-    await flowContract.transfer(
-        accounts[1],
-        web3.utils.toWei("1000000", "ether"),
-        { from: accounts[0] }
-    );
-    await compContract.transfer(
-        accounts[1],
-        web3.utils.toWei("1000000", "ether"),
-        { from: accounts[0] }
-    );
-    await linkContract.transfer(
-        accounts[1],
-        web3.utils.toWei("1000000", "ether"),
-        { from: accounts[0] }
-    );
-    await sushiContract.transfer(
-        accounts[1],
-        web3.utils.toWei("1000000", "ether"),
-        { from: accounts[0] }
-    );
-    await uniContract.transfer(
-        accounts[1],
-        web3.utils.toWei("1000000", "ether"),
-        { from: accounts[0] }
-    );
-    await usdtContract.transfer(
-        accounts[1],
-        web3.utils.toWei("1000000", "ether"),
-        { from: accounts[0] }
-    );
-    await yfiContract.transfer(
-        accounts[1],
-        web3.utils.toWei("1000000", "ether"),
-        { from: accounts[0] }
-    );
-    await zrxContract.transfer(
-        accounts[1],
-        web3.utils.toWei("1000000", "ether"),
-        { from: accounts[0] }
-    );
+        await usdcContract.transfer(
+            accounts[2],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+        await aaveContract.transfer(
+            accounts[1],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+        await aaveContract.transfer(
+            accounts[2],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await daiContract.transfer(
+            accounts[1],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await daiContract.transfer(
+            accounts[2],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await batContract.transfer(
+            accounts[1],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await batContract.transfer(
+            accounts[2],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await cakeContract.transfer(
+            accounts[1],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await cakeContract.transfer(
+            accounts[2],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+        
+        await flowContract.transfer(
+            accounts[1],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await flowContract.transfer(
+            accounts[2],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await compContract.transfer(
+            accounts[1],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await compContract.transfer(
+            accounts[2],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await linkContract.transfer(
+            accounts[1],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await linkContract.transfer(
+            accounts[2],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        ); 
+
+        await sushiContract.transfer(
+            accounts[1],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await sushiContract.transfer(
+            accounts[2],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+        await uniContract.transfer(
+            accounts[1],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await uniContract.transfer(
+            accounts[2],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+        await usdtContract.transfer(
+            accounts[1],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await usdtContract.transfer(
+            accounts[2],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await yfiContract.transfer(
+            accounts[1],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await yfiContract.transfer(
+            accounts[2],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await zrxContract.transfer(
+            accounts[1],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+
+        await zrxContract.transfer(
+            accounts[2],
+            web3.utils.toWei("500000", "ether"),
+            { from: accounts[0] }
+        );
+    }
+
+    if(network == "kovan"){
+         // deploy the tokens
+        await deployer.deploy(Dai);
+        await deployer.deploy(USDC);
+        await deployer.deploy(BAT);
+        await deployer.deploy(COMP);
+        await deployer.deploy(UNI);
+        await deployer.deploy(USDT);
+        await deployer.deploy(ZRX);
+        await deployer.deploy(DPK);
+        await deployer.deploy(PriceConsumerV3);
+
+        // get the deployed contracts
+        const daiContract = await Dai.deployed();
+        const usdcContract = await USDC.deployed();
+        const batContract = await BAT.deployed();
+        const compContract = await COMP.deployed();
+        const uniContract = await UNI.deployed();
+        const usdtContract = await USDT.deployed();
+        const zrxContract = await ZRX.deployed();
+        const dpkContract = await DPK.deployed();
+        const priceContract = await PriceConsumerV3.deployed();
+        await deployer.deploy(DapperBankKovan,dpkContract.address, priceContract.address);
+
+        const dapperbankContract = await DapperBankKovan.deployed();
+        dpkContract.transferOwnership(dapperbankContract.address, {from: process.env.DEPLOYER});
+
+
+        // add the tokens to the assets
+        await dapperbankContract.addTokenToAssets(daiContract.address);
+        await dapperbankContract.addTokenToAssets(usdcContract.address);
+        await dapperbankContract.addTokenToAssets(batContract.address);
+        await dapperbankContract.addTokenToAssets(compContract.address);
+        await dapperbankContract.addTokenToAssets(uniContract.address);
+        await dapperbankContract.addTokenToAssets(usdtContract.address);
+        await dapperbankContract.addTokenToAssets(zrxContract.address);
+
+         await dpkContract.transfer(
+            dapperbankContract.address,
+            web3.utils.toWei("1000000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+
+        await usdcContract.transfer(
+            process.env.ACCOUNT1,
+            web3.utils.toWei("500000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+
+        await usdcContract.transfer(
+            process.env.ACCOUNT2,
+            web3.utils.toWei("500000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+
+        await daiContract.transfer(
+            process.env.ACCOUNT1,
+            web3.utils.toWei("500000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+
+        await daiContract.transfer(
+            process.env.ACCOUNT2,
+            web3.utils.toWei("500000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+
+        await batContract.transfer(
+            process.env.ACCOUNT1,
+            web3.utils.toWei("500000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+
+        await batContract.transfer(
+            process.env.ACCOUNT2,
+            web3.utils.toWei("500000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+
+        await compContract.transfer(
+            process.env.ACCOUNT1,
+            web3.utils.toWei("500000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+
+        await compContract.transfer(
+            process.env.ACCOUNT2,
+            web3.utils.toWei("500000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+
+        await uniContract.transfer(
+            process.env.ACCOUNT1,
+            web3.utils.toWei("500000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+
+        await uniContract.transfer(
+            process.env.ACCOUNT2,
+            web3.utils.toWei("500000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+        await usdtContract.transfer(
+            process.env.ACCOUNT1,
+            web3.utils.toWei("500000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+
+        await usdtContract.transfer(
+            process.env.ACCOUNT2,
+            web3.utils.toWei("500000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+
+        await zrxContract.transfer(
+            process.env.ACCOUNT1,
+            web3.utils.toWei("500000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+
+        await zrxContract.transfer(
+            process.env.ACCOUNT2,
+            web3.utils.toWei("500000", "ether"),
+            { from: process.env.DEPLOYER }
+        );
+
+    }
 };
